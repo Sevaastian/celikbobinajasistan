@@ -1,0 +1,1 @@
+ALTER TABLE "bobinaj_kayitlari" ADD COLUMN "ek_tel_caplari_mm" numeric(6, 3)[] DEFAULT '{}' NOT NULL;

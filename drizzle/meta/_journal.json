@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1794669963339,
+      "tag": "0000_sparkling_maria_hill",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794673772316,
+      "tag": "0001_teknik_alanlar",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794677424041,
+      "tag": "0002_ikinci_tel",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794677905463,
+      "tag": "0003_on_tel",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794687700896,
+      "tag": "0004_giris_denemeleri",
+      "breakpoints": true
+    }
+  ]
+}
