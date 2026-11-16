@@ -17,6 +17,9 @@ export async function saveOrder(id: number | null, _previous: string | null, for
   const quick = id === null && field(form, "quickIntake") === "1";
   if (quick && !field(form, "complaint")) return "Arıza şikâyetini girin.";
   const receivedAt = quick ? new Date() : parseLocalDateTime(field(form, "receivedAt"));
+  const rawQuantity = field(form, "quantity") || "1";
+  const quantity = /^\d{1,4}$/.test(rawQuantity) ? Number(rawQuantity) : 0;
+  if (quantity < 1 || quantity > 9999) return "Adet 1 ile 9999 arasında bir tam sayı olmalı.";
   const estimated = field(form, "estimatedPrice");
   const final = field(form, "finalPrice");
   const estimatedPrice = decimal(estimated, 10, 2);
@@ -26,7 +29,7 @@ export async function saveOrder(id: number | null, _previous: string | null, for
   if (field(form, "assignedUserId") && !assignedUserId) return "Geçerli bir personel seçin.";
 
   const values = {
-    customerId, assignedUserId, deviceType, receivedAt, estimatedPrice, finalPrice,
+    customerId, assignedUserId, deviceType, receivedAt, estimatedPrice, finalPrice, quantity,
     brand: field(form, "brand").slice(0, 300) || null,
     model: field(form, "model").slice(0, 300) || null,
     serialNo: field(form, "serialNo").slice(0, 300) || null,
@@ -69,7 +72,7 @@ export async function saveOrder(id: number | null, _previous: string | null, for
             musteri_id = ${customerId}, cihaz_turu = ${deviceType}::cihaz_turu,
             atanan_kullanici_id = ${assignedUserId}, gelis_tarihi = ${receivedAt.toISOString()},
             tahmini_ucret = ${estimatedPrice}, kesin_ucret = ${finalPrice},
-            marka = ${values.brand}, model = ${values.model}, seri_no = ${values.serialNo},
+            adet = ${quantity}, marka = ${values.brand}, model = ${values.model}, seri_no = ${values.serialNo},
             ariza_sikayeti = ${values.complaint}, ariza_tespiti = ${values.diagnosis},
             yapilacak_islemler = ${values.plannedWork}, ek_alanlar = ${JSON.stringify(extra)}::jsonb, guncelleme_tarihi = now()
           where id = ${id}
@@ -132,57 +135,3 @@ export async function changeOrderStatus(id: number, expected: string, _previous:
   redirect(`/is-emirleri/${id}?kaydedildi=1`);
 }
 
-/**
- * Aynı iş emrinden birden fazla kopya açar (aynı müşteriden aynı cihazdan 5-6 hatta 16-17 adet geldiğinde).
- * Her kopya yeni bir iş emridir: müşteri, cihaz türü, marka/model, şikâyet ve planlanan işlem aktarılır;
- * seri numarası, tespit, kesin ücret, malzeme ve ödemeler aktarılmaz.
- * İstenirse kaynağın bobinaj kaydı da her yeni iş emrine kopyalanır (bobin gramları hariç).
- */
-export async function duplicateOrder(sourceId: number, _previous: string | null, form: FormData) {
-  const user = await requireUser();
-  const count = Number(field(form, "adet"));
-  if (!Number.isInteger(count) || count < 1 || count > 50) return "Adet 1 ile 50 arasında bir tam sayı olmalı.";
-  const serials = field(form, "seriler").split(/\r?\n/).map(line => line.trim().slice(0, 300)).filter(Boolean);
-  if (serials.length > count) return `${serials.length} seri numarası yazdınız ama adet ${count}. Adedi artırın ya da fazla satırları silin.`;
-  const copyWinding = field(form, "bobinaj") === "1";
-
-  const db = getDb();
-  const { windingRecords } = schema;
-  let firstId: number;
-  try {
-    const [source] = await db.select().from(workOrders).where(eq(workOrders.id, sourceId));
-    if (!source) return "Kaynak iş emri bulunamadı.";
-    const [winding] = copyWinding && source.deviceType === "motor"
-      ? await db.select().from(windingRecords).where(eq(windingRecords.workOrderId, sourceId)).orderBy(sql`${windingRecords.id} desc`).limit(1)
-      : [];
-
-    const ids = await db.execute<{ id: number }>(sql`select nextval(pg_get_serial_sequence('is_emirleri', 'id'))::int as id from generate_series(1, ${count}::int)`);
-    const newIds = ids.rows.map(row => row.id).sort((a, b) => a - b);
-    firstId = newIds[0];
-    const now = new Date();
-    const year = new Intl.DateTimeFormat("en", { year: "numeric", timeZone: "Europe/Istanbul" }).format(now);
-    const orders = newIds.map((newId, index) => ({
-      id: newId, number: `CB-${year}-${String(newId).padStart(5, "0")}`,
-      customerId: source.customerId, deviceType: source.deviceType, brand: source.brand, model: source.model,
-      serialNo: serials[index] ?? null, receivedAt: now, complaint: source.complaint, plannedWork: source.plannedWork,
-      estimatedPrice: source.estimatedPrice, assignedUserId: source.assignedUserId, extra: source.extra,
-      createdBy: user.uid, updatedAt: now,
-    }));
-    const windings = winding ? newIds.map((newId, index) => {
-      const { id: _id, coilWeights: _weights, workOrderId: _order, createdAt: _created, updatedAt: _updated, ...rest } = winding;
-      return { ...rest, serialNo: serials[index] ?? null, workOrderId: newId, customerId: source.customerId,
-        copiedFromId: winding.id, coilWeights: [], createdBy: user.uid, updatedAt: now };
-    }) : [];
-
-    await db.batch([
-      db.insert(workOrders).values(orders),
-      db.insert(workOrderStatusHistory).values(newIds.map(newId => ({ workOrderId: newId, toStatus: "yeni_geldi" as const, userId: user.uid, note: `#${sourceId} numaralı iş emrinden çoğaltıldı` }))),
-      db.insert(activityLogs).values(newIds.map(newId => ({ userId: user.uid, action: "olustur", entity: "is_emri", entityId: newId, details: { kaynak: sourceId } }))),
-      ...(windings.length ? [db.insert(windingRecords).values(windings)] : []),
-    ]);
-  } catch (error) {
-    console.error("İş emri çoğaltılamadı", error);
-    return "İş emirleri oluşturulamadı. Hiçbiri eklenmedi; lütfen tekrar deneyin.";
-  }
-  redirect(`/is-emirleri?kaydedildi=1&yeni=${firstId}`);
-}

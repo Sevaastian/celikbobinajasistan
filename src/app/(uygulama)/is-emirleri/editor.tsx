@@ -7,6 +7,7 @@ import { RecordForm } from "@/components/record-form";
 import { btnGhost, cardCls } from "@/components/ui";
 import { DEVICE_LABELS } from "@/lib/format";
 import { localDateTime } from "@/lib/record-input";
+import { UnitPrice } from "@/components/unit-price";
 import { saveOrder } from "./actions";
 
 export async function OrderEditor({ order, customerId, deviceType }: {
@@ -37,8 +38,10 @@ export async function OrderEditor({ order, customerId, deviceType }: {
           <Field label="Geliş tarihi (Türkiye saati)" name="receivedAt" type="datetime-local" required value={localDateTime(order?.receivedAt ?? new Date())} />
           <SelectField label="Atanan personel" name="assignedUserId" empty="Atanmamış" value={order?.assignedUserId}
             options={staff.map(s => [s.id, s.active ? s.name : `${s.name} (pasif)`])} />
-          <Field label="Tahmini ücret (₺)" name="estimatedPrice" inputMode="decimal" value={order?.estimatedPrice} />
-          <Field label="Kesin ücret (₺)" name="finalPrice" inputMode="decimal" value={order?.finalPrice} />
+          <Field label="Adet (aynı işten kaç tane geldi)" name="quantity" type="number" inputMode="numeric" value={order?.quantity ?? 1} />
+          <UnitPrice />
+          <Field label="Tahmini ücret (₺) — tüm adetin toplamı" name="estimatedPrice" inputMode="decimal" value={order?.estimatedPrice} />
+          <Field label="Kesin ücret (₺) — tüm adetin toplamı" name="finalPrice" inputMode="decimal" value={order?.finalPrice} />
           <Field label="Arıza şikâyeti" name="complaint" multiline value={order?.complaint} />
           <Field label="Arıza tespiti" name="diagnosis" multiline value={order?.diagnosis} />
           <Field label="Yapılacak işlemler" name="plannedWork" multiline value={order?.plannedWork} />

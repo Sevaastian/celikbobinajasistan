@@ -2,7 +2,7 @@ import { and, desc, eq, ilike, or } from "drizzle-orm";
 import Link from "next/link";
 import { getDb, schema } from "@/db";
 import { requireUser } from "@/lib/auth";
-import { DEVICE_LABELS, STATUS_LABELS, formatDate } from "@/lib/format";
+import { DEVICE_LABELS, STATUS_LABELS, formatDate, formatTL } from "@/lib/format";
 import { btnGhost, btnPrimary, cardCls } from "@/components/ui";
 import { Field, SelectField } from "@/components/record-fields";
 
@@ -32,9 +32,9 @@ export default async function Page({ searchParams }: { searchParams: { q?: strin
       {orders.length === 0 && <p className="text-zinc-400">İş emri bulunamadı.</p>}
       {orders.map(({ order, customer }) => <Link key={order.id} href={`/is-emirleri/${order.id}`}
         className="flex flex-wrap justify-between gap-2 py-3 hover:text-accent-400">
-        <div><p className="font-semibold">{order.number} · {customer}</p>
+        <div><p className="font-semibold">{order.number} · {customer}{order.quantity > 1 && <span className="ml-2 rounded-full bg-accent-500/15 px-2 py-0.5 text-xs text-accent-400">× {order.quantity} adet</span>}</p>
         <p className="text-sm text-zinc-400">{[DEVICE_LABELS[order.deviceType], order.brand, order.model, order.serialNo].filter(Boolean).join(" · ")}</p></div>
-        <div className="text-sm"><p>{STATUS_LABELS[order.status]}</p><p className="text-zinc-400">{formatDate(order.receivedAt)}</p></div>
+        <div className="text-sm"><p>{STATUS_LABELS[order.status]}</p><p className="text-zinc-400">{formatDate(order.receivedAt)}</p>{(order.finalPrice ?? order.estimatedPrice) !== null && <p className="text-zinc-400">{formatTL(order.finalPrice ?? order.estimatedPrice)}</p>}</div>
       </Link>)}
     </div>
   </div>;
