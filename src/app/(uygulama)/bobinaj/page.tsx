@@ -14,18 +14,27 @@ export default async function Page({ searchParams }: { searchParams: Record<stri
   const session = await requireUser();
   const text = (key: string) => typeof searchParams[key] === "string" ? (searchParams[key] as string).trim().slice(0, 300) : "";
   const q = text("q");
+  const brand = text("marka");
+  const kwText = text("kw");
+  const rpmText = text("devir");
   const sipir = text("sipir");
   const hatve = text("hatve");
   const mold = text("kalip");
   const wire = text("tel");
   const diameter = decimal(wire, 3, 3);
+  const kw = decimal(kwText, 10, 3);
+  const rpm = /^\d{1,6}$/.test(rpmText) ? Number(rpmText) : null;
+  const invalidFilter = (Boolean(wire) && !diameter) || (Boolean(kwText) && !kw) || (Boolean(rpmText) && rpm === null);
   const { windingRecords: w, customers: c, workOrders: o } = schema;
   const pattern = `%${q}%`;
-  const rows = wire && !diameter ? [] : await getDb().select({ record: w, customer: c.name }).from(w)
+  const rows = invalidFilter ? [] : await getDb().select({ record: w, customer: c.name }).from(w)
     .leftJoin(c, eq(w.customerId, c.id)).leftJoin(o, eq(w.workOrderId, o.id))
     .where(and(
       q ? or(ilike(w.brand, pattern), ilike(w.model, pattern), ilike(w.serialNo, pattern), ilike(w.mold, pattern),
         ilike(c.name, pattern), ilike(c.phone, pattern), ilike(o.number, pattern)) : undefined,
+      brand ? ilike(w.brand, `%${brand}%`) : undefined,
+      kw ? eq(w.kw, kw) : undefined,
+      rpm !== null ? eq(w.rpm, rpm) : undefined,
       sipir ? ilike(w.sipir, `%${sipir}%`) : undefined,
       hatve ? ilike(w.hatve, `%${hatve}%`) : undefined,
       mold ? ilike(w.mold, `%${mold}%`) : undefined,
@@ -41,6 +50,9 @@ export default async function Page({ searchParams }: { searchParams: Record<stri
     </header>
     <form className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <Field label="Motor, seri numarası, müşteri veya iş emri" name="q" value={q} />
+      <Field label="Marka" name="marka" value={brand} />
+      <Field label="Motor gücü (kW)" name="kw" value={kwText} inputMode="decimal" />
+      <Field label="Devir (RPM)" name="devir" value={rpmText} inputMode="numeric" />
       <Field label="Sipir" name="sipir" value={sipir} />
       <Field label="Hatve" name="hatve" value={hatve} />
       <Field label="Kalıp" name="kalip" value={mold} />
@@ -48,6 +60,8 @@ export default async function Page({ searchParams }: { searchParams: Record<stri
       <button className={btnGhost}>Filtrele</button>
     </form>
     {wire && !diameter && <p role="alert" className="text-red-300">Tel çapını 0,80 gibi sayısal bir değer olarak girin.</p>}
+    {kwText && !kw && <p role="alert" className="text-red-300">kW değerini sayısal girin (ör. 1,5).</p>}
+    {rpmText && rpm === null && <p role="alert" className="text-red-300">Devir değerini tam sayı olarak girin (ör. 1450).</p>}
     {session.role === "yonetici" ? <BulkDelete kind="bobinaj">
     <div className={cardCls + " divide-y divide-ink-600"}>
       {rows.length === 0 && <p className="text-zinc-400">Bobinaj kaydı bulunamadı.</p>}
