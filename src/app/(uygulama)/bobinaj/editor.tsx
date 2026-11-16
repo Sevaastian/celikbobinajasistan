@@ -1,48 +1,37 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-// Form doğrulama şeması (Dizi alanlarının güvenli array olarak gelmesini garantiliyoruz)
-const formSchema = z.object({
-  marka: z.string().min(1, "Marka zorunludur"),
-  model: z.string().optional().nullable(),
-  guc_kw: z.string().optional().nullable(),
-  devir: z.string().optional().nullable(),
-  ek_tel_caplari_mm: z.array(z.string()).default([]),
-});
+import { useRouter } from "next/navigation";
 
 export function BobinajEditor({ initialData, action }: { initialData?: any; action: (data: any) => Promise<any> }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Eski kayıtlardan null gelebilecek alanları güvenli varsayılanlarla karşılıyoruz
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      marka: initialData?.marka || "",
-      model: initialData?.model || "",
-      guc_kw: initialData?.guc_kw ? String(initialData.guc_kw) : "",
-      devir: initialData?.devir ? String(initialData.devir) : "",
-      // Hatanın koptuğu yer: null gelebilecek dizi alanını garantiye alıyoruz
-      ek_tel_caplari_mm: Array.isArray(initialData?.ek_tel_caplari_mm)
-        ? initialData.ek_tel_caplari_mm.map(String)
-        : [],
-    },
-  });
+  const [marka, setMarka] = useState(initialData?.marka || "");
+  const [model, setModel] = useState(initialData?.model || "");
+  const [gucKw, setGucKw] = useState(initialData?.guc_kw ? String(initialData.guc_kw) : "");
+  const [devir, setDevir] = useState(initialData?.devir ? String(initialData.devir) : "");
+  
+  // Eski kayıtlardan null gelebilecek dizi alanını güvenli karşılıyoruz (Sayfanın çökmesini önler)
+  const [ekTelCaplari] = useState<string[]>(
+    Array.isArray(initialData?.ek_tel_caplari_mm)
+      ? initialData.ek_tel_caplari_mm.map(String)
+      : []
+  );
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      await action(values);
+      await action({
+        marka,
+        model,
+        guc_kw: gucKw ? Number(gucKw) : null,
+        devir: devir ? Number(devir) : null,
+        ek_tel_caplari_mm: ekTelCaplari,
+      });
       router.refresh();
       router.push("/bobinaj");
     } catch (err: any) {
@@ -53,72 +42,65 @@ export function BobinajEditor({ initialData, action }: { initialData?: any; acti
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl">
-        {error && <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md">{error}</div>}
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl bg-white p-6 rounded-lg shadow border">
+      {error && <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md">{error}</div>}
 
-        <FormField
-          control={form.control}
-          name="marka"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Marka</FormLabel>
-              <FormControl>
-                <Input placeholder="Örn: Siemens" {...field} value={field.value || ""} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Marka</label>
+        <input
+          type="text"
+          required
+          value={marka}
+          onChange={(e) => setMarka(e.target.value)}
+          placeholder="Örn: Siemens"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+      </div>
 
-        <FormField
-          control={form.control}
-          name="model"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Model / Tip</FormLabel>
-              <FormControl>
-                <Input placeholder="Model bilgisi" {...field} value={field.value || ""} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Model / Tip</label>
+        <input
+          type="text"
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+          placeholder="Model bilgisi"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+      </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="guc_kw"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Güç (kW)</FormLabel>
-                <FormControl>
-                  <Input type="number" step="any" placeholder="0.0" {...field} value={field.value || ""} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="devir"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Devir (RPM)</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="1500" {...field} value={field.value || ""} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Güç (kW)</label>
+          <input
+            type="number"
+            step="any"
+            value={gucKw}
+            onChange={(e) => setGucKw(e.target.value)}
+            placeholder="0.0"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
-        <Button type="submit" disabled={loading} className="w-full">
-          {loading ? "Kaydediliyor..." : "Kaydı Güncelle"}
-        </Button>
-      </form>
-    </Form>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Devir (RPM)</label>
+          <input
+            type="number"
+            value={devir}
+            onChange={(e) => setDevir(e.target.value)}
+            placeholder="1500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+      >
+        {loading ? "Kaydediliyor..." : "Kaydı Güncelle"}
+      </button>
+    </form>
   );
 }
+
