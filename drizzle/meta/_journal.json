@@ -43,6 +43,13 @@
       "when": 1794818521647,
       "tag": "0005_bobin_gramlari",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794824665041,
+      "tag": "0006_is_emri_adet",
+      "breakpoints": true
     }
   ]
 }
