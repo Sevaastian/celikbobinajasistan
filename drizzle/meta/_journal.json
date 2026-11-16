@@ -50,6 +50,13 @@
       "when": 1794824665041,
       "tag": "0006_is_emri_adet",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794827025261,
+      "tag": "0007_cihaz_turleri_kalip",
+      "breakpoints": true
     }
   ]
 }
