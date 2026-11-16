@@ -32,6 +32,7 @@ export async function documentData(kind: DocumentData["kind"], orderId: number):
     brand: order.brand,
     model: order.model,
     serialNo: order.serialNo,
+    quantity: order.quantity,
     receivedAt: formatDate(order.receivedAt),
     complaint: order.complaint,
     diagnosis: order.diagnosis,

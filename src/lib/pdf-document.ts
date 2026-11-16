@@ -11,6 +11,7 @@ export type DocumentData = {
   brand: string | null;
   model: string | null;
   serialNo: string | null;
+  quantity: number;
   receivedAt: string;
   complaint: string | null;
   diagnosis: string | null;
@@ -60,6 +61,7 @@ export function renderDocument(data: DocumentData): Promise<Buffer> {
       ["Müşteri", data.customer], ["Telefon", data.phone], ["Cihaz türü", data.deviceType],
       ["Marka / model", [data.brand, data.model].filter(Boolean).join(" ") || null],
       ["Seri numarası", data.serialNo], ["Geliş tarihi", data.receivedAt],
+      ...(data.quantity > 1 ? [["Adet", `${data.quantity} adet (ücret toplamdır)`] as [string, string]] : []),
     ];
     const colWidth = width / 2 - 8;
     const startY = pdf.y;
