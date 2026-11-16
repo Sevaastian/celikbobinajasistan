@@ -104,3 +104,5 @@ export function BobinajEditor({ initialData, action }: { initialData?: any; acti
   );
 }
 
+// Diğer sayfaların aradığı WindingEditor tanımını da buraya bağlıyoruz:
+export const WindingEditor = BobinajEditor;
