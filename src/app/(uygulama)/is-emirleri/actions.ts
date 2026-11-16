@@ -5,6 +5,7 @@ import { eq, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { getDb, schema } from "@/db";
 import { requireUser } from "@/lib/auth";
+import { isWindingDevice } from "@/lib/format";
 import { decimal, field, parseLocalDateTime, recordId } from "@/lib/record-input";
 
 const { workOrders, workOrderStatusHistory, activityLogs, customers, users } = schema;
@@ -82,6 +83,8 @@ export async function saveOrder(id: number | null, _previous: string | null, for
               and not exists (select 1 from jenerator_servis_kayitlari where is_emri_id = ${id})
             ))
             and (cihaz_turu = ${deviceType}::cihaz_turu or
+              (${isWindingDevice(deviceType)} and cihaz_turu::text in ('motor','dalgic','su_motoru','fan_motoru','alternator')
+                and not exists (select 1 from el_aleti_tamirleri where is_emri_id = ${id}) and not exists (select 1 from pompa_tamirleri where is_emri_id = ${id}) and not exists (select 1 from jenerator_servis_kayitlari where is_emri_id = ${id})) or
               (not exists (select 1 from bobinaj_kayitlari where is_emri_id = ${id})
               and not exists (select 1 from el_aleti_tamirleri where is_emri_id = ${id})
               and not exists (select 1 from pompa_tamirleri where is_emri_id = ${id})
