@@ -1,3 +1,4 @@
+import { missingWinding } from "@/lib/winding-check";
 import { formatGrams, formatKilos, sumGrams } from "@/lib/coil-weights";
 import { and, asc, desc, eq, ne, sql } from "drizzle-orm";
 import { ReportLinks } from "@/components/report-links";
@@ -51,6 +52,7 @@ export default async function Page({ params }: { params: { id: string } }) {
       <h2 className="mb-2 font-semibold">Kullanılacak teller</h2>
       <p>{formatWindingWires(record) || "Tel seçilmedi"}</p>
     </section>
+    {missingWinding(record).length > 0 && <p role="alert" className="rounded-lg border border-red-500/60 bg-red-500/10 p-3 text-sm text-red-200">❗ Eksik bilgi: {missingWinding(record).join(", ")}. <Link className="underline" href={`/bobinaj/${id}/duzenle`}>Düzenleyip tamamla</Link></p>}
     {record.coilWeights.length > 0 && <section className={cardCls}>
       <h2 className="mb-2 font-semibold">Bobin ağırlıkları</h2>
       <p className="text-sm text-zinc-400">{record.coilWeights.map((g, i) => `${i + 1}. ${formatGrams(Number(g))}`).join(" · ")}</p>
