@@ -285,6 +285,8 @@ export const windingRecords = pgTable(
     additionalWireDiameters: numeric("ek_tel_caplari_mm", { precision: 6, scale: 3 }).array().notNull().default([]),
     parallelWires: integer("paralel_tel_sayisi"),
     coilCount: integer("bobin_sayisi"),
+    /** Söküm sırasında tartılan her bobinin gramı (sırayla). Toplam her yerde bu listeden hesaplanır. */
+    coilWeights: numeric("bobin_gramlari", { precision: 8, scale: 1 }).array().notNull().default([]),
     slotInfo: text("oluk_bilgileri"),
     windingConnection: text("sarim_baglantisi"),
     windingShape: text("sarim_sekli"),
