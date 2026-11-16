@@ -1,4 +1,6 @@
 import { requireUser } from "@/lib/auth";
+import { Achievements } from "@/components/achievements";
+import { DailySurprise } from "@/components/daily-surprise";
 import { CashChart } from "@/components/cash-chart";
 import Link from "next/link";
 import { and, desc, eq, gt, gte, lt, lte, sql, inArray } from "drizzle-orm";
@@ -91,6 +93,8 @@ export default async function Dashboard() {
     <div className="space-y-6">
       <header className="cb-heading"><h1 className="text-2xl font-bold">Genel Bakış</h1></header>
 
+      <DailySurprise />
+
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
         {quick.map(({ href, label, icon: Icon }) => (
           <Link key={href} href={href}
@@ -109,6 +113,7 @@ export default async function Dashboard() {
         ))}
       </div>
 
+      <Achievements />
       <CashChart paid={Number(monthRevenue.t)} spent={Number(monthExpense.t)} />
       <div className="grid gap-4 lg:grid-cols-3">
         <section className="rounded-xl border border-ink-600 bg-ink-800 p-4 lg:col-span-2">

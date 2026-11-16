@@ -135,6 +135,7 @@ export async function changeOrderStatus(id: number, expected: string, _previous:
     console.error("İş emri durumu güncellenemedi", error);
     return "Durum kaydedilemedi. Lütfen tekrar deneyin.";
   }
-  redirect(`/is-emirleri/${id}?kaydedildi=1`);
+  const celebrate = status === "tamamlandi" || status === "teslim_edildi";
+  redirect(`/is-emirleri/${id}?kaydedildi=1${celebrate ? "&kutlama=1" : ""}`);
 }
 

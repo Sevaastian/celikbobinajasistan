@@ -8,4 +8,6 @@ export const ACCENTS = [
   { id: "kirmizi", label: "Kırmızı", color: "#ef4444" },
   { id: "camgobegi", label: "Camgöbeği", color: "#06b6d4" },
   { id: "sari", label: "Sarı", color: "#eab308" },
+  { id: "canli", label: "Canlı (pembe)", color: "#d946ef" },
+  { id: "retro", label: "Retro atölye", color: "#d97706" },
 ] as const;

@@ -1,6 +1,6 @@
 "use client";
 
-import { successFeedback } from "./workshop-feedback";
+import { errorFeedback, successFeedback } from "./workshop-feedback";
 import { useFormState } from "react-dom";
 import { SubmitButton } from "@/components/submit-button";
 
@@ -13,6 +13,7 @@ export function RecordForm({ action, children, label = "Kaydet", notify = false 
   const [error, formAction] = useFormState(async (state: string | null, data: FormData) => {
     const result = await action(state, data);
     if (result === null && notify) successFeedback();
+    if (result !== null) errorFeedback();
     return result;
   }, null);
   return (

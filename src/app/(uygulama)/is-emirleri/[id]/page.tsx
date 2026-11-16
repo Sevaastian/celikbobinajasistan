@@ -2,6 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { ReportLinks } from "@/components/report-links";
 import { WhatsAppMenu } from "@/components/whatsapp-menu";
 import { servicePaths } from "@/lib/service-fields";
+import { OrderCelebration } from "@/components/order-celebration";
 import { OrderMaterials } from "./materials";
 import { DeleteRecord } from "@/components/delete-record";
 import { WorkshopHistory } from "@/components/workshop-history";
@@ -20,7 +21,7 @@ import { changeOrderStatus } from "../actions";
 
 const unitText = (total: string, quantity: number) => quantity > 1 ? ` (toplam · adet başı ${formatTL(Number(total) / quantity)})` : "";
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({ params, searchParams }: { params: { id: string }; searchParams: { kutlama?: string } }) {
   const user = await requireUser();
   const id = recordId(params.id);
   if (!id) notFound();
@@ -71,6 +72,7 @@ export default async function Page({ params }: { params: { id: string } }) {
       <h2 className="mb-2 font-semibold">Bobinaj kayıtları</h2>
       {windings.map(item => <Link className="block py-1 text-accent-400" key={item.id} href={`/bobinaj/${item.id}`}>#{item.id} · {formatDateTime(item.date)}</Link>)}
     </section>}
+    <OrderCelebration active={searchParams.kutlama === "1"} />
     <OrderMaterials orderId={id} open={order.status !== "iptal_edildi" && order.status !== "teslim_edildi"} />
     <WorkshopHistory kind="is_emri" id={id} createdBy={order.createdBy} createdAt={order.createdAt} />
     <OrderPhotos orderId={id} />

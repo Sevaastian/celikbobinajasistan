@@ -1,6 +1,7 @@
 import { windingWires } from "@/lib/wire-sizes";
 import { WireFields } from "@/components/wire-fields";
 import { WindingWarning } from "@/components/winding-warning";
+import { WindingPreview } from "@/components/winding-preview";
 import { CoilWeights } from "@/components/coil-weights";
 import { TechnicalExtra } from "@/components/technical-extra";
 import { asc, desc, eq, inArray } from "drizzle-orm";
@@ -63,6 +64,7 @@ export async function WindingEditor({ current, source, orderId, teardown, custom
           </details>
         </section>)}
       <WireFields values={windingWires(data)} />
+      <WindingPreview />
       {teardown && <WindingWarning />}
       <CoilWeights values={current?.coilWeights ?? []} initialCount={data?.coilCount ?? null} />
       <details className={cardCls}>

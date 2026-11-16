@@ -8,20 +8,29 @@ let context: AudioContext | undefined;
 let enabled = false;
 const preference = "cb-islem-sesi";
 
-function play() {
+type Sound = "kaydet" | "basari" | "hata";
+// Her ses farklı: kaydet = kısa tık, başarı = yükselen iki nota, hata = alçak iki nota.
+const SOUNDS: Record<Sound, { notes: number[]; type: OscillatorType; gap: number; length: number; volume: number }> = {
+  kaydet: { notes: [520], type: "triangle", gap: 0, length: 0.06, volume: 0.05 },
+  basari: { notes: [660, 880], type: "sine", gap: 0.075, length: 0.12, volume: 0.07 },
+  hata: { notes: [240, 180], type: "square", gap: 0.12, length: 0.16, volume: 0.04 },
+};
+
+function play(kind: Sound = "basari") {
   if (!enabled || !context || context.state !== "running") return;
-  for (const [index, frequency] of [660, 880].entries()) {
-    const start = context.currentTime + index * 0.075;
+  const sound = SOUNDS[kind];
+  for (const [index, frequency] of sound.notes.entries()) {
+    const start = context.currentTime + index * sound.gap;
     const tone = context.createOscillator();
     const gain = context.createGain();
-    tone.type = "sine";
+    tone.type = sound.type;
     tone.frequency.value = frequency;
     gain.gain.setValueAtTime(0.001, start);
-    gain.gain.exponentialRampToValueAtTime(0.07, start + 0.015);
-    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.12);
+    gain.gain.exponentialRampToValueAtTime(sound.volume, start + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + sound.length);
     tone.connect(gain).connect(context.destination);
     tone.start(start);
-    tone.stop(start + 0.13);
+    tone.stop(start + sound.length + 0.01);
   }
 }
 
@@ -34,14 +43,22 @@ function unlock() {
 }
 
 export function successFeedback() {
-  play();
+  play("basari");
   window.dispatchEvent(new Event("cb-success"));
 }
+
+/** Hata mesajı çıkınca alçak uyarı sesi. */
+export function errorFeedback() { play("hata"); }
+
+/** Kaydet düğmesine basınca kısa tık sesi. */
+export function saveClickFeedback() { play("kaydet"); }
 
 /** Tek örnek: "Kaydedildi" bildirimini ve ?kaydedildi=1 yönlendirmesini yönetir. */
 export function WorkshopFeedback() {
   const pathname = usePathname();
-  const saved = useSearchParams().get("kaydedildi");
+  const params = useSearchParams();
+  const saved = params.get("kaydedildi");
+  const celebrate = params.get("kutlama") === "1";
   const [visible, setVisible] = useState(false);
   const timer = useRef<number>();
   useEffect(() => {
@@ -63,13 +80,14 @@ export function WorkshopFeedback() {
     };
   }, []);
   useEffect(() => {
-    if (saved !== "1") return;
+    if (saved !== "1" && !celebrate) return;
     const url = new URL(window.location.href);
-    if (!url.searchParams.has("kaydedildi")) return;
+    if (!url.searchParams.has("kaydedildi") && !url.searchParams.has("kutlama")) return;
     url.searchParams.delete("kaydedildi");
+    url.searchParams.delete("kutlama");
     window.history.replaceState(window.history.state, "", url);
-    successFeedback();
-  }, [pathname, saved]);
+    if (saved === "1") successFeedback();
+  }, [pathname, saved, celebrate]);
   if (!visible) return null;
   return (
     <div role="status" className="cb-feedback fixed right-4 z-50 flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-ink-900 px-4 py-3 text-sm text-emerald-300 shadow-xl bottom-[calc(5.5rem+env(safe-area-inset-bottom))] lg:bottom-6">
@@ -92,7 +110,7 @@ export function SoundToggle({ className = "" }: { className?: string }) {
     setSound(enabled);
   }
   return (
-    <button type="button" onClick={toggle} aria-pressed={sound} aria-label="İşlem sesi" title="İşlem sesi"
+    <button type="button" onClick={toggle} aria-pressed={sound} aria-label="İşlem seslerini aç/kapat" title="İşlem sesleri (kaydet, başarı, hata)"
       className={`rounded-lg p-2 text-zinc-300 hover:bg-ink-700 ${className}`}>
       {sound ? <Volume2 size={18} /> : <VolumeX size={18} />}
     </button>

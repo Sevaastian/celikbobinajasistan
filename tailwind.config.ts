@@ -7,7 +7,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: { 950: "#0a0a0b", 900: "#111113", 800: "#18181b", 700: "#222226", 600: "#2e2e34", 500: "#44444c" },
+        ink: Object.fromEntries(["950", "900", "800", "700", "600", "500"].map(n => [n, `rgb(var(--ink-${n}) / <alpha-value>)`])),
         // Vurgu rengi CSS değişkenlerinden gelir; menüdeki tema seçiciyle değişir.
         accent: { DEFAULT: accent("500"), 400: accent("400"), 500: accent("500"), 600: accent("600") },
       },
