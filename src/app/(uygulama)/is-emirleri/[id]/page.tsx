@@ -16,7 +16,9 @@ import { RecordForm } from "@/components/record-form";
 import { Field, SelectField } from "@/components/record-fields";
 import { OrderPhotos } from "@/components/record-photos";
 import { btnGhost, cardCls } from "@/components/ui";
-import { changeOrderStatus, duplicateOrder } from "../actions";
+import { changeOrderStatus } from "../actions";
+
+const unitText = (total: string, quantity: number) => quantity > 1 ? ` (toplam · adet başı ${formatTL(Number(total) / quantity)})` : "";
 
 export default async function Page({ params }: { params: { id: string } }) {
   const user = await requireUser();
@@ -37,10 +39,10 @@ export default async function Page({ params }: { params: { id: string } }) {
   ]);
   const details = [
     ["Cihaz türü", DEVICE_LABELS[order.deviceType]], ["Marka", order.brand], ["Model", order.model],
-    ["Seri numarası", order.serialNo], ["Geliş", formatDateTime(order.receivedAt)],
+    ["Seri numarası", order.serialNo], ...(order.quantity > 1 ? [["Adet", `${order.quantity} adet`]] : []), ["Geliş", formatDateTime(order.receivedAt)],
     ["Teslim", formatDateTime(order.deliveredAt)], ["Atanan personel", assignee],
-    ["Tahmini ücret", order.estimatedPrice === null ? null : formatTL(order.estimatedPrice)],
-    ["Kesin ücret", order.finalPrice === null ? null : formatTL(order.finalPrice)],
+    ["Tahmini ücret", order.estimatedPrice === null ? null : formatTL(order.estimatedPrice) + unitText(order.estimatedPrice, order.quantity)],
+    ["Kesin ücret", order.finalPrice === null ? null : formatTL(order.finalPrice) + unitText(order.finalPrice, order.quantity)],
     ["Arıza şikâyeti", order.complaint], ["Arıza tespiti", order.diagnosis], ["Yapılacak işlemler", order.plannedWork],
   ];
   return <div className="space-y-4">
@@ -69,21 +71,6 @@ export default async function Page({ params }: { params: { id: string } }) {
       <h2 className="mb-2 font-semibold">Bobinaj kayıtları</h2>
       {windings.map(item => <Link className="block py-1 text-accent-400" key={item.id} href={`/bobinaj/${item.id}`}>#{item.id} · {formatDateTime(item.date)}</Link>)}
     </section>}
-    {order.status !== "iptal_edildi" && <details className={cardCls}>
-      <summary className="cursor-pointer font-semibold">Aynısından çoğalt (çok adetli iş)</summary>
-      <p className="mt-1 text-sm text-zinc-400">Aynı müşteriden aynı cihazdan birden fazla geldiyse yazdığınız adet kadar yeni iş emri açılır. Müşteri, cihaz, şikâyet ve planlanan işlem aktarılır; malzeme, ödeme ve kesin ücret aktarılmaz.</p>
-      <div className="mt-3">
-        <RecordForm action={duplicateOrder.bind(null, id)} label="İş emirlerini oluştur">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Kaç adet yeni iş emri? (1-50)" name="adet" type="number" inputMode="numeric" required />
-            <Field label="Seri numaraları (isteğe bağlı, her satıra bir tane)" name="seriler" multiline />
-            {order.deviceType === "motor" && windings.length > 0 && <label className="flex items-center gap-2 text-sm sm:col-span-2">
-              <input type="checkbox" name="bobinaj" value="1" defaultChecked /> Bobinaj bilgilerini (sipir, hatve, tel) her yeni iş emrine kopyala
-            </label>}
-          </div>
-        </RecordForm>
-      </div>
-    </details>}
     <OrderMaterials orderId={id} open={order.status !== "iptal_edildi" && order.status !== "teslim_edildi"} />
     <WorkshopHistory kind="is_emri" id={id} createdBy={order.createdBy} createdAt={order.createdAt} />
     <OrderPhotos orderId={id} />
