@@ -25,6 +25,9 @@ export default async function Page({ params }: { params: { id: string } }) {
     .leftJoin(c, eq(w.customerId, c.id)).leftJoin(o, eq(w.workOrderId, o.id)).where(eq(w.id, id));
   if (!row) notFound();
   const { record, customer, order } = row;
+  // Eski/aktarılmış kayıtlarda yeni sütunlar boş (NULL) kalmış olabilir.
+  const coilWeights = record.coilWeights ?? [];
+  const extra = record.extra ?? {};
   const serial = record.serialNo?.trim();
   const [related, definitions] = await Promise.all([
     serial ? db.select({ id: w.id, brand: w.brand, model: w.model, date: w.createdAt }).from(w)
@@ -53,10 +56,10 @@ export default async function Page({ params }: { params: { id: string } }) {
       <p>{formatWindingWires(record) || "Tel seçilmedi"}</p>
     </section>
     {missingWinding(record).length > 0 && <p role="alert" className="rounded-lg border border-red-500/60 bg-red-500/10 p-3 text-sm text-red-200">❗ Eksik bilgi: {missingWinding(record).join(", ")}. <Link className="underline" href={`/bobinaj/${id}/duzenle`}>Düzenleyip tamamla</Link></p>}
-    {record.coilWeights.length > 0 && <section className={cardCls}>
+    {coilWeights.length > 0 && <section className={cardCls}>
       <h2 className="mb-2 font-semibold">Bobin ağırlıkları</h2>
-      <p className="text-sm text-zinc-400">{record.coilWeights.map((g, i) => `${i + 1}. ${formatGrams(Number(g))}`).join(" · ")}</p>
-      <p className="mt-2 text-lg font-bold">{formatGrams(sumGrams(record.coilWeights))} <span className="text-accent-400">({formatKilos(sumGrams(record.coilWeights))})</span></p>
+      <p className="text-sm text-zinc-400">{coilWeights.map((g, i) => `${i + 1}. ${formatGrams(Number(g))}`).join(" · ")}</p>
+      <p className="mt-2 text-lg font-bold">{formatGrams(sumGrams(coilWeights))} <span className="text-accent-400">({formatKilos(sumGrams(coilWeights))})</span></p>
     </section>}
     {([["Motor bilgileri", motorFields], ["Sargı bilgileri", windingFields]] as const).map(([title, fields]) => <section className={cardCls} key={title}>
       <h2 className="mb-3 font-semibold">{title}</h2>
@@ -65,10 +68,10 @@ export default async function Page({ params }: { params: { id: string } }) {
           <dd className="whitespace-pre-wrap break-words">{record[key] ?? "—"}</dd></div>)}
       </dl>
     </section>)}
-    {Object.keys(record.extra).length > 0 && <section className={cardCls}>
+    {Object.keys(extra).length > 0 && <section className={cardCls}>
       <h2 className="mb-3 font-semibold">Ek teknik alanlar</h2>
       <dl className="grid gap-4 sm:grid-cols-2">
-        {Object.entries(record.extra).map(([key, value]) => <div key={key}>
+        {Object.entries(extra).map(([key, value]) => <div key={key}>
           <dt className="text-sm text-zinc-400">{labels.get(key) ?? key}</dt><dd className="break-words">{value ?? "—"}</dd>
         </div>)}
       </dl>
