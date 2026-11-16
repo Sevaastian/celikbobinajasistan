@@ -1,0 +1,1 @@
+ALTER TABLE "is_emirleri" ADD COLUMN "adet" integer DEFAULT 1 NOT NULL;

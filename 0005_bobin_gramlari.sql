@@ -1,0 +1,1 @@
+ALTER TABLE "bobinaj_kayitlari" ADD COLUMN "bobin_gramlari" numeric(8, 1)[] DEFAULT '{}' NOT NULL;
