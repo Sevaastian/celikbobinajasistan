@@ -9,7 +9,7 @@ import { Field, SelectField } from "@/components/record-fields";
 import { btnGhost, btnPrimary, cardCls } from "@/components/ui";
 
 export default async function Page({ searchParams }: { searchParams: Record<string, string | string[] | undefined> }) {
-  await requireUser();
+  const session = await requireUser();
   const text = (key: string) => typeof searchParams[key] === "string" ? (searchParams[key] as string).trim().slice(0, 300) : "";
   const q = text("q");
   const sipir = text("sipir");
@@ -30,7 +30,10 @@ export default async function Page({ searchParams }: { searchParams: Record<stri
   return <div className="space-y-4">
     <header className="flex flex-wrap items-center justify-between gap-3">
       <h1 className="text-2xl font-bold">Motor Bobinaj</h1>
-      <Link href="/bobinaj/yeni" className={btnPrimary}>Yeni bobinaj kaydı</Link>
+      <div className="flex flex-wrap gap-2">
+        {session.role !== "personel" && <Link href="/bobinaj/ice-aktar" className={btnGhost}>Eski kayıtları aktar</Link>}
+        <Link href="/bobinaj/yeni" className={btnPrimary}>Yeni bobinaj kaydı</Link>
+      </div>
     </header>
     <form className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <Field label="Motor, seri numarası, müşteri veya iş emri" name="q" value={q} />

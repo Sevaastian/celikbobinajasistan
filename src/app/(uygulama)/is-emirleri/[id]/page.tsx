@@ -1,10 +1,11 @@
 import { desc, eq } from "drizzle-orm";
 import { ReportLinks } from "@/components/report-links";
+import { WhatsAppMenu } from "@/components/whatsapp-menu";
 import { servicePaths } from "@/lib/service-fields";
 import { OrderMaterials } from "./materials";
 import { DeleteRecord } from "@/components/delete-record";
 import { WorkshopHistory } from "@/components/workshop-history";
-import { QrCode, Cog } from "lucide-react";
+import { QrCode, Cog, FileText } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDb, schema } from "@/db";
@@ -23,11 +24,11 @@ export default async function Page({ params }: { params: { id: string } }) {
   if (!id) notFound();
   const db = getDb();
   const { customers, workOrders, users, workOrderStatusHistory: history, windingRecords } = schema;
-  const [row] = await db.select({ order: workOrders, customer: customers.name, assignee: users.fullName })
+  const [row] = await db.select({ order: workOrders, customer: customers.name, phone: customers.phone, assignee: users.fullName })
     .from(workOrders).innerJoin(customers, eq(workOrders.customerId, customers.id))
     .leftJoin(users, eq(workOrders.assignedUserId, users.id)).where(eq(workOrders.id, id));
   if (!row) notFound();
-  const { order, customer, assignee } = row;
+  const { order, customer, phone, assignee } = row;
   const [events, windings] = await Promise.all([
     db.select({ event: history, user: users.fullName }).from(history).leftJoin(users, eq(history.userId, users.id))
       .where(eq(history.workOrderId, id)).orderBy(desc(history.createdAt), desc(history.id)),
@@ -50,6 +51,9 @@ export default async function Page({ params }: { params: { id: string } }) {
       <div className="flex flex-wrap gap-2">
         <Link href={`/is-emirleri/${id}/etiket`} className={btnGhost}><QrCode size={17} /> QR etiket</Link>
         <ReportLinks kind="is-emri" id={id} />
+        <a className={btnGhost} href={`/api/belge/teklif?id=${id}`} target="_blank" rel="noopener noreferrer"><FileText size={17} /> Fiyat teklifi</a>
+        <a className={btnGhost} href={`/api/belge/teslim?id=${id}`} target="_blank" rel="noopener noreferrer"><FileText size={17} /> Teslim fişi</a>
+        <WhatsAppMenu customer={customer} phone={phone} order={order} />
         {user.role !== "personel" && order.status !== "iptal_edildi" && <Link className={btnGhost} href={`/finans/tahsilat?isEmri=${id}`}>Tahsilat</Link>}
         {order.deviceType !== "motor" && order.deviceType !== "diger" &&
           <Link className={btnGhost} href={`${servicePaths[order.deviceType]}?isEmri=${id}`}>Servis kayıtları</Link>}
