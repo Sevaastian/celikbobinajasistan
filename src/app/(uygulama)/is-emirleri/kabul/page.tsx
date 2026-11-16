@@ -27,6 +27,7 @@ export default async function Page({ searchParams }: { searchParams: { musteri?:
           <SelectField name="customerId" label="Müşteri" required empty="Müşteri seçin" value={searchParams.musteri}
             options={customers.map(c => [c.id, [c.name, c.phone].filter(Boolean).join(" · ")])} />
           <SelectField name="deviceType" label="Cihaz türü" value="motor" options={Object.entries(DEVICE_LABELS)} />
+          <Field name="quantity" label="Adet (aynı işten kaç tane)" type="number" inputMode="numeric" value={1} />
           <Field name="complaint" label="Arıza şikâyeti" multiline required />
         </div>
       </RecordForm> : <p className="text-sm text-zinc-300">Cihaz kabulü için önce bir müşteri ekleyin.</p>}
