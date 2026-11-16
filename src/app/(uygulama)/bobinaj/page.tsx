@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
 import { formatWindingWires, wireOptions, wireValue } from "@/lib/wire-sizes";
 import { decimal } from "@/lib/record-input";
+import { BulkDelete } from "@/components/bulk-delete";
 import { Field, SelectField } from "@/components/record-fields";
 import { btnGhost, btnPrimary, cardCls } from "@/components/ui";
 
@@ -43,12 +44,26 @@ export default async function Page({ searchParams }: { searchParams: Record<stri
       <button className={btnGhost}>Filtrele</button>
     </form>
     {wire && !diameter && <p role="alert" className="text-red-300">Tel çapını 0,80 gibi sayısal bir değer olarak girin.</p>}
+    {session.role === "yonetici" ? <BulkDelete kind="bobinaj">
     <div className={cardCls + " divide-y divide-ink-600"}>
       {rows.length === 0 && <p className="text-zinc-400">Bobinaj kaydı bulunamadı.</p>}
-      {rows.map(({ record, customer }) => <Link key={record.id} href={`/bobinaj/${record.id}`} className="block py-3 hover:text-accent-400">
+      {rows.map(({ record, customer }) => <div key={record.id} className="flex items-start gap-3">
+        {session.role === "yonetici" && <input type="checkbox" name="ids" value={record.id} aria-label={`#${record.id} seç`} className="mt-4 h-5 w-5 shrink-0" />}
+        <Link href={`/bobinaj/${record.id}`} className="block min-w-0 flex-1 py-3 hover:text-accent-400">
         <p className="font-semibold">{[`#${record.id}`, record.brand, record.model, record.serialNo, customer].filter(Boolean).join(" · ")}</p>
         <p className="text-sm text-zinc-400">{formatDate(record.createdAt)} · Sipir {record.sipir ?? "—"} · Hatve {record.hatve ?? "—"}{record.wireDiameter && ` · Tel ${formatWindingWires(record)}`}</p>
-      </Link>)}
+      </Link></div>)}
     </div>
+    </BulkDelete> :
+    <div className={cardCls + " divide-y divide-ink-600"}>
+      {rows.length === 0 && <p className="text-zinc-400">Bobinaj kaydı bulunamadı.</p>}
+      {rows.map(({ record, customer }) => <div key={record.id} className="flex items-start gap-3">
+        {session.role === "yonetici" && <input type="checkbox" name="ids" value={record.id} aria-label={`#${record.id} seç`} className="mt-4 h-5 w-5 shrink-0" />}
+        <Link href={`/bobinaj/${record.id}`} className="block min-w-0 flex-1 py-3 hover:text-accent-400">
+        <p className="font-semibold">{[`#${record.id}`, record.brand, record.model, record.serialNo, customer].filter(Boolean).join(" · ")}</p>
+        <p className="text-sm text-zinc-400">{formatDate(record.createdAt)} · Sipir {record.sipir ?? "—"} · Hatve {record.hatve ?? "—"}{record.wireDiameter && ` · Tel ${formatWindingWires(record)}`}</p>
+      </Link></div>)}
+    </div>
+    }
   </div>;
 }
