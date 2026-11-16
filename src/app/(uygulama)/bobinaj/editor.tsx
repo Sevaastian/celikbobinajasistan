@@ -1,108 +1,74 @@
-"use client";
+import { windingWires } from "@/lib/wire-sizes";
+import { WireFields } from "@/components/wire-fields";
+import { WindingWarning } from "@/components/winding-warning";
+import { CoilWeights } from "@/components/coil-weights";
+import { TechnicalExtra } from "@/components/technical-extra";
+import { asc, desc, eq, inArray } from "drizzle-orm";
+import { WINDING_DEVICES } from "@/lib/format";
+import { getDb, schema } from "@/db";
+import { Field, SelectField } from "@/components/record-fields";
+import { RecordForm } from "@/components/record-form";
+import { cardCls } from "@/components/ui";
+import { motorFields, windingFields } from "./fields";
+import { saveWinding } from "./actions";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+const primaryKeys = new Set(["brand", "model", "serialNo", "kw", "volt", "rpm", "sipir", "hatve", "mold", "notes"]);
 
-export function BobinajEditor({ initialData, action }: { initialData?: any; action: (data: any) => Promise<any> }) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+type Winding = typeof schema.windingRecords.$inferSelect;
 
-  const [marka, setMarka] = useState(initialData?.marka || "");
-  const [model, setModel] = useState(initialData?.model || "");
-  const [gucKw, setGucKw] = useState(initialData?.guc_kw ? String(initialData.guc_kw) : "");
-  const [devir, setDevir] = useState(initialData?.devir ? String(initialData.devir) : "");
-  
-  // Eski kayıtlardan null gelebilecek dizi alanını güvenli karşılıyoruz (Sayfanın çökmesini önler)
-  const [ekTelCaplari] = useState<string[]>(
-    Array.isArray(initialData?.ek_tel_caplari_mm)
-      ? initialData.ek_tel_caplari_mm.map(String)
-      : []
-  );
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      await action({
-        marka,
-        model,
-        guc_kw: gucKw ? Number(gucKw) : null,
-        devir: devir ? Number(devir) : null,
-        ek_tel_caplari_mm: ekTelCaplari,
-      });
-      router.refresh();
-      router.push("/bobinaj");
-    } catch (err: any) {
-      setError(err.message || "Bir hata oluştu");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl bg-white p-6 rounded-lg shadow border">
-      {error && <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md">{error}</div>}
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Marka</label>
-        <input
-          type="text"
-          required
-          value={marka}
-          onChange={(e) => setMarka(e.target.value)}
-          placeholder="Örn: Siemens"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Model / Tip</label>
-        <input
-          type="text"
-          value={model}
-          onChange={(e) => setModel(e.target.value)}
-          placeholder="Model bilgisi"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Güç (kW)</label>
-          <input
-            type="number"
-            step="any"
-            value={gucKw}
-            onChange={(e) => setGucKw(e.target.value)}
-            placeholder="0.0"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Devir (RPM)</label>
-          <input
-            type="number"
-            value={devir}
-            onChange={(e) => setDevir(e.target.value)}
-            placeholder="1500"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-      </div>
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-      >
-        {loading ? "Kaydediliyor..." : "Kaydı Güncelle"}
-      </button>
-    </form>
-  );
+export async function WindingEditor({ current, source, orderId, teardown, customerId, picker }: {
+  current?: Winding; source?: Winding; orderId?: number | null; teardown?: boolean; customerId?: number | null;
+  picker?: React.ReactNode;
+}) {
+  const db = getDb();
+  const { customers, workOrders } = schema;
+  const [clients, orders] = await Promise.all([
+    db.select().from(customers).orderBy(asc(customers.name)),
+    db.select({ order: workOrders, customer: customers.name }).from(workOrders)
+      .innerJoin(customers, eq(workOrders.customerId, customers.id))
+      .where(inArray(workOrders.deviceType, [...WINDING_DEVICES])).orderBy(desc(workOrders.id)),
+  ]);
+  const selected = orders.find(({ order }) => order.id === orderId)?.order;
+  const data = current ?? source;
+  return <div className="space-y-4">
+    <h1 className={teardown ? "text-lg font-semibold" : "text-2xl font-bold"}>{current ? `Bobinaj #${current.id} · Düzenle` : "Yeni bobinaj kaydı"}</h1>
+    {!current && picker}
+    {source && <p className="text-sm text-zinc-400">#{source.id} numaralı kaydın teknik bilgileri aktarıldı.</p>}
+    <RecordForm action={saveWinding.bind(null, current?.id ?? null, source?.id ?? null)}>
+      {teardown && selected ? <><input type="hidden" name="teardown" value="1" /><input type="hidden" name="workOrderId" value={selected.id} /></> : <section className={cardCls + " grid gap-4 sm:grid-cols-2"}>
+        <SelectField name="workOrderId" label="Motor iş emri" empty="İş emri seçilmedi"
+          value={current?.workOrderId ?? selected?.id}
+          options={orders.map(({ order, customer }) => [order.id, [order.number, customer, order.brand, order.model].filter(Boolean).join(" · ")])} />
+        <SelectField name="customerId" label="Müşteri (iş emri yoksa)" empty="Müşteri seçilmedi"
+          value={current ? (current.workOrderId || selected ? null : current.customerId) : selected ? null : customerId}
+          options={clients.map(client => [client.id, client.name])} />
+      </section>}
+      {([[ "Motor bilgileri", motorFields], ["Sargı bilgileri", windingFields]] as const).map(([title, fields]) =>
+        <section className={cardCls} key={title}>
+          <h2 className="mb-3 font-semibold">{title}</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {fields.filter(([key]) => primaryKeys.has(key)).map(([key, label, kind]) =>
+              <Field key={key} name={key} label={label} value={data?.[key] ?? (
+                key === "brand" || key === "model" || key === "serialNo" ? selected?.[key] : undefined
+              )} multiline={kind === "multiline"} inputMode={kind === "integer" ? "numeric" : kind === "power" ? "decimal" : undefined} />)}
+          </div>
+          <details className="mt-3">
+            <summary className="cursor-pointer text-sm text-accent-400">Diğer teknik alanlar</summary>
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              {fields.filter(([key]) => !primaryKeys.has(key)).map(([key, label, kind]) =>
+                <Field key={key} name={key} label={label} value={data?.[key]}
+                  multiline={kind === "multiline"}
+                  inputMode={kind === "integer" ? "numeric" : kind === "power" ? "decimal" : undefined} />)}
+            </div>
+          </details>
+        </section>)}
+      <WireFields values={windingWires(data)} />
+      {teardown && <WindingWarning />}
+      <CoilWeights values={current?.coilWeights ?? []} initialCount={data?.coilCount ?? null} />
+      <details className={cardCls}>
+        <summary className="cursor-pointer text-sm text-accent-400">Özel alanlar</summary>
+        <div className="mt-3"><TechnicalExtra device="motor" values={data?.extra} /></div>
+      </details>
+    </RecordForm>
+  </div>;
 }
-
-// Diğer sayfaların aradığı WindingEditor tanımını da buraya bağlıyoruz:
-export const WindingEditor = BobinajEditor;
