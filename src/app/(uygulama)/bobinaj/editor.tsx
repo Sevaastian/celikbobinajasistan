@@ -1,74 +1,124 @@
-import { windingWires } from "@/lib/wire-sizes";
-import { WireFields } from "@/components/wire-fields";
-import { WindingWarning } from "@/components/winding-warning";
-import { CoilWeights } from "@/components/coil-weights";
-import { TechnicalExtra } from "@/components/technical-extra";
-import { asc, desc, eq, inArray } from "drizzle-orm";
-import { WINDING_DEVICES } from "@/lib/format";
-import { getDb, schema } from "@/db";
-import { Field, SelectField } from "@/components/record-fields";
-import { RecordForm } from "@/components/record-form";
-import { cardCls } from "@/components/ui";
-import { motorFields, windingFields } from "./fields";
-import { saveWinding } from "./actions";
+"use client";
 
-const primaryKeys = new Set(["brand", "model", "serialNo", "kw", "volt", "rpm", "sipir", "hatve", "mold", "notes"]);
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-type Winding = typeof schema.windingRecords.$inferSelect;
+// Form doğrulama şeması (Dizi alanlarının güvenli array olarak gelmesini garantiliyoruz)
+const formSchema = z.object({
+  marka: z.string().min(1, "Marka zorunludur"),
+  model: z.string().optional().nullable(),
+  guc_kw: z.string().optional().nullable(),
+  devir: z.string().optional().nullable(),
+  ek_tel_caplari_mm: z.array(z.string()).default([]),
+});
 
-export async function WindingEditor({ current, source, orderId, teardown, customerId, picker }: {
-  current?: Winding; source?: Winding; orderId?: number | null; teardown?: boolean; customerId?: number | null;
-  picker?: React.ReactNode;
-}) {
-  const db = getDb();
-  const { customers, workOrders } = schema;
-  const [clients, orders] = await Promise.all([
-    db.select().from(customers).orderBy(asc(customers.name)),
-    db.select({ order: workOrders, customer: customers.name }).from(workOrders)
-      .innerJoin(customers, eq(workOrders.customerId, customers.id))
-      .where(inArray(workOrders.deviceType, [...WINDING_DEVICES])).orderBy(desc(workOrders.id)),
-  ]);
-  const selected = orders.find(({ order }) => order.id === orderId)?.order;
-  const data = current ?? source;
-  return <div className="space-y-4">
-    <h1 className={teardown ? "text-lg font-semibold" : "text-2xl font-bold"}>{current ? `Bobinaj #${current.id} · Düzenle` : "Yeni bobinaj kaydı"}</h1>
-    {!current && picker}
-    {source && <p className="text-sm text-zinc-400">#{source.id} numaralı kaydın teknik bilgileri aktarıldı.</p>}
-    <RecordForm action={saveWinding.bind(null, current?.id ?? null, source?.id ?? null)}>
-      {teardown && selected ? <><input type="hidden" name="teardown" value="1" /><input type="hidden" name="workOrderId" value={selected.id} /></> : <section className={cardCls + " grid gap-4 sm:grid-cols-2"}>
-        <SelectField name="workOrderId" label="Motor iş emri" empty="İş emri seçilmedi"
-          value={current?.workOrderId ?? selected?.id}
-          options={orders.map(({ order, customer }) => [order.id, [order.number, customer, order.brand, order.model].filter(Boolean).join(" · ")])} />
-        <SelectField name="customerId" label="Müşteri (iş emri yoksa)" empty="Müşteri seçilmedi"
-          value={current ? (current.workOrderId || selected ? null : current.customerId) : selected ? null : customerId}
-          options={clients.map(client => [client.id, client.name])} />
-      </section>}
-      {([[ "Motor bilgileri", motorFields], ["Sargı bilgileri", windingFields]] as const).map(([title, fields]) =>
-        <section className={cardCls} key={title}>
-          <h2 className="mb-3 font-semibold">{title}</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {fields.filter(([key]) => primaryKeys.has(key)).map(([key, label, kind]) =>
-              <Field key={key} name={key} label={label} value={data?.[key] ?? (
-                key === "brand" || key === "model" || key === "serialNo" ? selected?.[key] : undefined
-              )} multiline={kind === "multiline"} inputMode={kind === "integer" ? "numeric" : kind === "power" ? "decimal" : undefined} />)}
-          </div>
-          <details className="mt-3">
-            <summary className="cursor-pointer text-sm text-accent-400">Diğer teknik alanlar</summary>
-            <div className="mt-3 grid gap-4 sm:grid-cols-2">
-              {fields.filter(([key]) => !primaryKeys.has(key)).map(([key, label, kind]) =>
-                <Field key={key} name={key} label={label} value={data?.[key]}
-                  multiline={kind === "multiline"}
-                  inputMode={kind === "integer" ? "numeric" : kind === "power" ? "decimal" : undefined} />)}
-            </div>
-          </details>
-        </section>)}
-      <WireFields values={windingWires(data)} />
-      {teardown && <WindingWarning />}
-      <CoilWeights values={current?.coilWeights ?? []} initialCount={data?.coilCount ?? null} />
-      <details className={cardCls}>
-        <summary className="cursor-pointer text-sm text-accent-400">Özel alanlar</summary>
-        <div className="mt-3"><TechnicalExtra device="motor" values={data?.extra} /></div>
-      </details>
-    </RecordForm>
-  </div>;
+export function BobinajEditor({ initialData, action }: { initialData?: any; action: (data: any) => Promise<any> }) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Eski kayıtlardan null gelebilecek alanları güvenli varsayılanlarla karşılıyoruz
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      marka: initialData?.marka || "",
+      model: initialData?.model || "",
+      guc_kw: initialData?.guc_kw ? String(initialData.guc_kw) : "",
+      devir: initialData?.devir ? String(initialData.devir) : "",
+      // Hatanın koptuğu yer: null gelebilecek dizi alanını garantiye alıyoruz
+      ek_tel_caplari_mm: Array.isArray(initialData?.ek_tel_caplari_mm)
+        ? initialData.ek_tel_caplari_mm.map(String)
+        : [],
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setLoading(true);
+    setError(null);
+    try {
+      await action(values);
+      router.refresh();
+      router.push("/bobinaj");
+    } catch (err: any) {
+      setError(err.message || "Bir hata oluştu");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl">
+        {error && <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md">{error}</div>}
+
+        <FormField
+          control={form.control}
+          name="marka"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Marka</FormLabel>
+              <FormControl>
+                <Input placeholder="Örn: Siemens" {...field} value={field.value || ""} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="model"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Model / Tip</FormLabel>
+              <FormControl>
+                <Input placeholder="Model bilgisi" {...field} value={field.value || ""} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="guc_kw"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Güç (kW)</FormLabel>
+                <FormControl>
+                  <Input type="number" step="any" placeholder="0.0" {...field} value={field.value || ""} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="devir"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Devir (RPM)</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="1500" {...field} value={field.value || ""} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <Button type="submit" disabled={loading} className="w-full">
+          {loading ? "Kaydediliyor..." : "Kaydı Güncelle"}
+        </Button>
+      </form>
+    </Form>
+  );
 }
