@@ -1,3 +1,4 @@
+import { formatGrams, formatKilos, sumGrams } from "@/lib/coil-weights";
 import { and, asc, desc, eq, ne, sql } from "drizzle-orm";
 import { ReportLinks } from "@/components/report-links";
 import { DeleteRecord } from "@/components/delete-record";
@@ -38,7 +39,7 @@ export default async function Page({ params }: { params: { id: string } }) {
       <div className="flex flex-wrap gap-2">
         <ReportLinks kind="bobinaj" id={id} />
         <Link href={`/bobinaj/${id}/duzenle`} className={btnGhost}>Düzenle</Link>
-        <Link href={`/bobinaj/yeni?kopya=${id}`} className={btnPrimary}>Kopyadan yeni kayıt</Link>
+        <Link href={`/bobinaj/yeni?kopya=${id}`} className={btnPrimary}>Aynısından yeni kayıt ekle</Link>
       </div>
     </header>
     {(customer || order || record.copiedFromId) && <section className={cardCls + " flex flex-wrap gap-4"}>
@@ -50,6 +51,11 @@ export default async function Page({ params }: { params: { id: string } }) {
       <h2 className="mb-2 font-semibold">Kullanılacak teller</h2>
       <p>{formatWindingWires(record) || "Tel seçilmedi"}</p>
     </section>
+    {record.coilWeights.length > 0 && <section className={cardCls}>
+      <h2 className="mb-2 font-semibold">Bobin ağırlıkları</h2>
+      <p className="text-sm text-zinc-400">{record.coilWeights.map((g, i) => `${i + 1}. ${formatGrams(Number(g))}`).join(" · ")}</p>
+      <p className="mt-2 text-lg font-bold">{formatGrams(sumGrams(record.coilWeights))} <span className="text-accent-400">({formatKilos(sumGrams(record.coilWeights))})</span></p>
+    </section>}
     {([["Motor bilgileri", motorFields], ["Sargı bilgileri", windingFields]] as const).map(([title, fields]) => <section className={cardCls} key={title}>
       <h2 className="mb-3 font-semibold">{title}</h2>
       <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
