@@ -34,6 +34,9 @@ textarea {
   @apply text-base;
   max-width: 100%;
 }
+/* Söküm ekranında eksik zorunlu alan */
+[data-eksik] { border-color: #ef4444 !important; box-shadow: 0 0 0 1px #ef4444; }
+
 /* iOS, 16px altı alanlara odaklanınca sayfayı yakınlaştırır; telefonda her zaman 16px */
 @media (max-width: 1023px) {
   input, select, textarea { font-size: 16px !important; }
