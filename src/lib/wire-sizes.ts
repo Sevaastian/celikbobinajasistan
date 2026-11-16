@@ -20,9 +20,10 @@ export function wireValue(value: string | null | undefined) {
 export function windingWires(record?: {
   wireDiameter: string | null;
   secondWireDiameter: string | null;
-  additionalWireDiameters: string[];
+  additionalWireDiameters: string[] | null;
 }) {
-  return record ? [record.wireDiameter, record.secondWireDiameter, ...record.additionalWireDiameters] : [];
+  // Older/imported records may not have the newer array column populated.
+  return record ? [record.wireDiameter, record.secondWireDiameter, ...(record.additionalWireDiameters ?? [])] : [];
 }
 
 export function formatWindingWires(record: Parameters<typeof windingWires>[0]) {
