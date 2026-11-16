@@ -64,7 +64,7 @@ const TEXT_COLUMNS: Record<string, string> = {
   marka: "brand", model: "model", serino: "serialNo", serinumarasi: "serialNo", seri: "serialNo",
   volt: "volt", voltaj: "volt", faz: "phase", frekans: "frequency", hz: "frequency",
   baglantitipi: "connectionType", govdeolcusu: "frameSize", govde: "frameSize",
-  hvc: "hvc", sipir: "sipir", hatve: "hatve",
+  hvc: "hvc", sipir: "sipir", hatve: "hatve", kalip: "mold",
   olukbilgileri: "slotInfo", olukbilgisi: "slotInfo", sarimbaglantisi: "windingConnection",
   sarimsekli: "windingShape", izolasyonbilgileri: "insulation", izolasyon: "insulation",
   teknikaciklamalar: "notes", aciklama: "notes", notlar: "notes", not: "notes",
@@ -202,13 +202,13 @@ export function mapRows(table: string[][]): ParseResult {
 /** Şablon dosyası: Excel'in Türkçe sürümüyle doğrudan açılır (noktalı virgül + UTF-8 BOM). */
 export const TEMPLATE_HEADERS = [
   "Müşteri", "Telefon", "Tarih", "Marka", "Model", "Seri No", "kW", "HP", "Volt", "Faz", "RPM", "Frekans",
-  "Kutup sayısı", "Oluk sayısı", "Bağlantı tipi", "Gövde ölçüsü", "HVC", "Sipir", "Hatve",
+  "Kutup sayısı", "Oluk sayısı", "Bağlantı tipi", "Gövde ölçüsü", "HVC", "Sipir", "Hatve", "Kalıp",
   "Tel çapı 1 (mm)", "Tel çapı 2 (mm)", "Tel çapı 3 (mm)", "Paralel tel sayısı", "Bobin sayısı",
   "Oluk bilgileri", "Sarım bağlantısı", "Sarım şekli", "İzolasyon bilgileri", "Teknik açıklamalar",
 ];
 export const TEMPLATE_EXAMPLE = [
   "Ahmet Yılmaz", "0555 123 45 67", "12.03.2024", "Siemens", "1LA7 090-4AA", "", "1,5", "2", "380", "3", "1450", "50",
-  "4", "36", "Yıldız", "90S", "", "42", "1-8",
+  "4", "36", "Yıldız", "90S", "", "42", "1-8", "K-12",
   "0,90", "", "", "2", "12",
   "", "", "", "", "Örnek satır - silip kendi kayıtlarınızı yazın",
 ];

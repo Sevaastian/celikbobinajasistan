@@ -43,8 +43,18 @@ export const STATUS_LABELS: Record<string, string> = {
 
 export const DEVICE_LABELS: Record<string, string> = {
   motor: "Elektrik motoru",
+  dalgic: "Dalgıç motor",
+  su_motoru: "Su motoru",
+  fan_motoru: "Fan motoru",
+  alternator: "Alternatör",
   el_aleti: "El aleti",
   jenerator: "Jeneratör",
   pompa: "Pompa",
   diger: "Diğer",
 };
+
+/** Sarım (söküm ekranı ve bobinaj kaydı) yapılan cihaz türleri. */
+export const WINDING_DEVICES = ["motor", "dalgic", "su_motoru", "fan_motoru", "alternator"] as const;
+export function isWindingDevice(type: string | null | undefined) {
+  return !!type && (WINDING_DEVICES as readonly string[]).includes(type);
+}
