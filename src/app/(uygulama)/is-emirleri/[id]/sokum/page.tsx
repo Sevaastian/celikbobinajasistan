@@ -10,10 +10,11 @@ import { formatWindingWires } from "@/lib/wire-sizes";
 import { RecordPhotos } from "@/components/record-photos";
 import { WorkshopHistory } from "@/components/workshop-history";
 import { btnGhost, cardCls } from "@/components/ui";
+import { ReadyRecordPicker } from "@/components/ready-record-picker";
 import { WindingEditor } from "../../../bobinaj/editor";
 
 export default async function Page({ params, searchParams }: {
-  params: { id: string }; searchParams: { kopya?: string; kayit?: string };
+  params: { id: string }; searchParams: { kopya?: string; kayit?: string; ara?: string };
 }) {
   await requireUser();
   const id = recordId(params.id);
@@ -35,7 +36,7 @@ export default async function Page({ params, searchParams }: {
     or(eq(w.customerId, order.customerId), sameMotor),
   )).orderBy(desc(w.createdAt), desc(w.id)).limit(12);
   const copyId = recordId(searchParams.kopya);
-  const source = !current && copyId ? previous.find(record => record.id === copyId) : undefined;
+  const [source] = !current && copyId ? await db.select().from(w).where(eq(w.id, copyId)) : [];
   return <div className="mx-auto max-w-4xl space-y-4">
     <header className="cb-heading flex flex-wrap items-center justify-between gap-3">
       <div><h1 className="flex items-center gap-2 text-2xl font-bold"><Cog size={24} className="text-accent-400" /> Söküm</h1>
@@ -56,7 +57,8 @@ export default async function Page({ params, searchParams }: {
         </div>)}
       </div>
     </details>}
-    <WindingEditor key={`${current?.id ?? ""}:${source?.id ?? ""}`} current={current} source={source} orderId={id} teardown />
+    <WindingEditor key={`${current?.id ?? ""}:${source?.id ?? ""}`} current={current} source={source} orderId={id} teardown
+      picker={<ReadyRecordPicker base={`/is-emirleri/${id}/sokum`} search={searchParams.ara ?? ""} />} />
     <WorkshopHistory kind={current ? "bobinaj" : "is_emri"} id={current?.id ?? id}
       createdBy={current ? current.createdBy : order.createdBy} createdAt={current?.createdAt ?? order.createdAt} />
     {current && <WorkshopHistory kind="is_emri" id={id} createdBy={order.createdBy} createdAt={order.createdAt} />}
