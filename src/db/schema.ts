@@ -165,6 +165,8 @@ export const workOrders = pgTable(
     brand: text("marka"),
     model: text("model"),
     serialNo: text("seri_no"),
+    /** Aynı işten kaç adet geldiği. Ücretler tüm adetin toplamıdır. */
+    quantity: integer("adet").notNull().default(1),
     receivedAt: timestamp("gelis_tarihi", { withTimezone: true }).notNull().defaultNow(),
     complaint: text("ariza_sikayeti"),
     diagnosis: text("ariza_tespiti"),
