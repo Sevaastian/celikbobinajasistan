@@ -1,7 +1,7 @@
 import { Field, SelectField } from "@/components/record-fields";
 import { getExtraFields, type Extra } from "@/lib/technical-extra";
 
-export async function TechnicalExtra({ device, values }: { device: string; values?: Extra }) {
+export async function TechnicalExtra({ device, values }: { device: string; values?: Extra | null }) {
   const definitions = await getExtraFields(device);
   if (!definitions.length) return null;
   return <fieldset className="grid gap-3 sm:grid-cols-2">

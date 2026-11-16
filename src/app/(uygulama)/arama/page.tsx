@@ -23,7 +23,7 @@ export default async function Page({ searchParams }: { searchParams: { q?: strin
   const groups = [
     { title: "Müşteriler", path: "/musteriler", rows: clients.map(v => ({ id: v.id, label: [v.name, v.phone] })) },
     { title: "İş emirleri", path: "/is-emirleri", rows: orders.map(v => ({ id: v.id, label: [v.number, v.brand, v.model, v.serialNo] })) },
-    { title: "Bobinaj", path: "/bobinaj", rows: windings.map(v => ({ id: v.id, label: [`#${v.id}`, v.brand, v.model, v.serialNo, v.sipir, v.hatve, v.wireDiameter, v.secondWireDiameter, ...v.additionalWireDiameters] })) },
+    { title: "Bobinaj", path: "/bobinaj", rows: windings.map(v => ({ id: v.id, label: [`#${v.id}`, v.brand, v.model, v.serialNo, v.sipir, v.hatve, v.wireDiameter, v.secondWireDiameter, ...(v.additionalWireDiameters ?? [])] })) },
     { title: "Jeneratörler", path: "/jeneratorler", rows: generators.map(v => ({ id: v.id, label: [`#${v.id}`, v.brand, v.model, v.serialNo] })) },
   ];
   return <div className="space-y-4">

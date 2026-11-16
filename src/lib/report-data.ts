@@ -63,7 +63,7 @@ export async function reportData(kind: ReportKind, id: number | null, period?: s
       ["Müşteri", row.customer], ["İş emri", row.order], ["Tarih", formatDateTime(row.record.createdAt)],
       ...[...motorFields, ...windingFields].map(([key, label]) => [label, row.record[key]]),
       ...windingWires(row.record).flatMap((size, index) => size ? [[`${index + 1}. tel çapı`, formatWireSize(size)]] : []),
-      ...Object.entries(row.record.extra).map(([key, value]) => [labels.get(key) ?? key, value]),
+      ...Object.entries(row.record.extra ?? {}).map(([key, value]) => [labels.get(key) ?? key, value]),
     ] };
   }
   const [client] = await db.select().from(c).where(eq(c.id, id));
