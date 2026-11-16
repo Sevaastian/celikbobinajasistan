@@ -1,8 +1,10 @@
 import { windingWires } from "@/lib/wire-sizes";
 import { WireFields } from "@/components/wire-fields";
+import { WindingWarning } from "@/components/winding-warning";
 import { CoilWeights } from "@/components/coil-weights";
 import { TechnicalExtra } from "@/components/technical-extra";
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, desc, eq, inArray } from "drizzle-orm";
+import { WINDING_DEVICES } from "@/lib/format";
 import { getDb, schema } from "@/db";
 import { Field, SelectField } from "@/components/record-fields";
 import { RecordForm } from "@/components/record-form";
@@ -10,7 +12,7 @@ import { cardCls } from "@/components/ui";
 import { motorFields, windingFields } from "./fields";
 import { saveWinding } from "./actions";
 
-const primaryKeys = new Set(["brand", "model", "serialNo", "kw", "volt", "rpm", "sipir", "hatve", "notes"]);
+const primaryKeys = new Set(["brand", "model", "serialNo", "kw", "volt", "rpm", "sipir", "hatve", "mold", "notes"]);
 
 type Winding = typeof schema.windingRecords.$inferSelect;
 
@@ -24,7 +26,7 @@ export async function WindingEditor({ current, source, orderId, teardown, custom
     db.select().from(customers).orderBy(asc(customers.name)),
     db.select({ order: workOrders, customer: customers.name }).from(workOrders)
       .innerJoin(customers, eq(workOrders.customerId, customers.id))
-      .where(eq(workOrders.deviceType, "motor")).orderBy(desc(workOrders.id)),
+      .where(inArray(workOrders.deviceType, [...WINDING_DEVICES])).orderBy(desc(workOrders.id)),
   ]);
   const selected = orders.find(({ order }) => order.id === orderId)?.order;
   const data = current ?? source;
@@ -61,6 +63,7 @@ export async function WindingEditor({ current, source, orderId, teardown, custom
           </details>
         </section>)}
       <WireFields values={windingWires(data)} />
+      {teardown && <WindingWarning />}
       <CoilWeights values={current?.coilWeights ?? []} initialCount={data?.coilCount ?? null} />
       <details className={cardCls}>
         <summary className="cursor-pointer text-sm text-accent-400">Özel alanlar</summary>

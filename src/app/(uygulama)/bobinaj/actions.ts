@@ -5,6 +5,7 @@ import { eq, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { getDb, schema } from "@/db";
 import { requireUser } from "@/lib/auth";
+import { isWindingDevice } from "@/lib/format";
 import { decimal, field, recordId } from "@/lib/record-input";
 import { windingWires, wireSizes } from "@/lib/wire-sizes";
 import { motorFields, windingFields } from "./fields";
@@ -51,7 +52,7 @@ export async function saveWinding(id: number | null, sourceId: number | null, _p
       getExtraFields("motor"),
     ]);
     if (relatedId && !previous) return "Bobinaj kaydı bulunamadı.";
-    if (workOrderId && order?.deviceType !== "motor") return "Elektrik motoruna ait bir iş emri seçin.";
+    if (workOrderId && !isWindingDevice(order?.deviceType)) return "Motor, dalgıç, fan, alternatör gibi sarım işi olan bir iş emri seçin.";
     if (order && selectedCustomer && selectedCustomer !== order.customerId) return "Müşteri, iş emrindeki müşteriyle eşleşmelidir.";
 
     const oldSizes = windingWires(previous);

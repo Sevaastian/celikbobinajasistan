@@ -7,7 +7,7 @@ export const motorFields = [
 ] as const;
 
 export const windingFields = [
-  ["hvc", "HVC", "text"], ["sipir", "Sipir", "text"], ["hatve", "Hatve", "text"],
+  ["hvc", "HVC", "text"], ["sipir", "Sipir", "text"], ["hatve", "Hatve", "text"], ["mold", "Kalıp (hangi kalıpla sarıldı)", "text"],
  
   ["parallelWires", "Paralel tel sayısı", "integer"], ["coilCount", "Bobin sayısı", "integer"],
   ["slotInfo", "Oluk bilgileri", "multiline"], ["windingConnection", "Sarım bağlantısı", "text"],
