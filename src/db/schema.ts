@@ -26,6 +26,10 @@ export const deviceTypeEnum = pgEnum("cihaz_turu", [
   "jenerator",
   "pompa",
   "diger",
+  "dalgic",
+  "fan_motoru",
+  "alternator",
+  "su_motoru",
 ]);
 
 export const workStatusEnum = pgEnum("is_durumu", [
@@ -281,6 +285,8 @@ export const windingRecords = pgTable(
     hvc: text("hvc"),
     sipir: text("sipir"),
     hatve: text("hatve"),
+    /** Motorun hangi kalıpla sarıldığı (tekrar gelen işlerde aynı kalıbı bulmak için). */
+    mold: text("kalip"),
     hiw: text("hiw"),
     wireDiameter: numeric("tel_capi_mm", { precision: 6, scale: 3 }),
     secondWireDiameter: numeric("ikinci_tel_capi_mm", { precision: 6, scale: 3 }),
