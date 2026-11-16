@@ -3,7 +3,8 @@ import { ReportLinks } from "@/components/report-links";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { desc, eq } from "drizzle-orm";
-import { Pencil, Phone, MapPin, ClipboardPlus } from "lucide-react";
+import { Pencil, Phone, MapPin, ClipboardPlus, MessageCircle } from "lucide-react";
+import { whatsappLink } from "@/lib/whatsapp";
 import { getDb, schema } from "@/db";
 import { requireUser } from "@/lib/auth";
 import { formatDate, formatTL, STATUS_LABELS, DEVICE_LABELS } from "@/lib/format";
@@ -40,7 +41,8 @@ export default async function CustomerDetail({ params }: { params: { id: string 
         <div>
           <h1 className="text-2xl font-bold">{customer.name}</h1>
           <div className="mt-1 space-y-0.5 text-sm text-zinc-400">
-            {customer.phone && <div className="flex items-center gap-1.5"><Phone size={14} /> {customer.phone}</div>}
+            {customer.phone && <div className="flex items-center gap-1.5"><Phone size={14} /> {customer.phone}
+              {whatsappLink(customer.phone, `Merhaba ${customer.name},`) && <a href={whatsappLink(customer.phone, `Merhaba ${customer.name},`)!} target="_blank" rel="noopener noreferrer" className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-300"><MessageCircle size={12} /> WhatsApp</a>}</div>}
             {customer.address && <div className="flex items-center gap-1.5"><MapPin size={14} /> {customer.address}</div>}
             <div>Kayıt tarihi: {formatDate(customer.createdAt)}</div>
           </div>
@@ -86,7 +88,7 @@ export default async function CustomerDetail({ params }: { params: { id: string 
       </section>
 
       <section className={cardCls}>
-        <h2 className="mb-3 font-semibold">Bobinaj kayıtları ({windings.length})</h2>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h2 className="font-semibold">Bobinaj kayıtları ({windings.length})</h2><Link href={`/bobinaj/yeni?musteri=${id}`} className="text-sm text-accent-400">Hazır kayıttan ekle</Link></div>
         {windings.length === 0 ? <p className="text-sm text-zinc-400">Bobinaj kaydı yok.</p> : (
           <ul className="divide-y divide-ink-600 text-sm">
             {windings.map((w) => (
