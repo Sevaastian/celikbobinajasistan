@@ -1,5 +1,6 @@
 import { windingWires } from "@/lib/wire-sizes";
 import { WireFields } from "@/components/wire-fields";
+import { CoilWeights } from "@/components/coil-weights";
 import { TechnicalExtra } from "@/components/technical-extra";
 import { asc, desc, eq } from "drizzle-orm";
 import { getDb, schema } from "@/db";
@@ -13,8 +14,9 @@ const primaryKeys = new Set(["brand", "model", "serialNo", "kw", "volt", "rpm", 
 
 type Winding = typeof schema.windingRecords.$inferSelect;
 
-export async function WindingEditor({ current, source, orderId, teardown }: {
-  current?: Winding; source?: Winding; orderId?: number | null; teardown?: boolean;
+export async function WindingEditor({ current, source, orderId, teardown, customerId, picker }: {
+  current?: Winding; source?: Winding; orderId?: number | null; teardown?: boolean; customerId?: number | null;
+  picker?: React.ReactNode;
 }) {
   const db = getDb();
   const { customers, workOrders } = schema;
@@ -28,6 +30,7 @@ export async function WindingEditor({ current, source, orderId, teardown }: {
   const data = current ?? source;
   return <div className="space-y-4">
     <h1 className={teardown ? "text-lg font-semibold" : "text-2xl font-bold"}>{current ? `Bobinaj #${current.id} · Düzenle` : "Yeni bobinaj kaydı"}</h1>
+    {!current && picker}
     {source && <p className="text-sm text-zinc-400">#{source.id} numaralı kaydın teknik bilgileri aktarıldı.</p>}
     <RecordForm action={saveWinding.bind(null, current?.id ?? null, source?.id ?? null)}>
       {teardown && selected ? <><input type="hidden" name="teardown" value="1" /><input type="hidden" name="workOrderId" value={selected.id} /></> : <section className={cardCls + " grid gap-4 sm:grid-cols-2"}>
@@ -35,7 +38,7 @@ export async function WindingEditor({ current, source, orderId, teardown }: {
           value={current?.workOrderId ?? selected?.id}
           options={orders.map(({ order, customer }) => [order.id, [order.number, customer, order.brand, order.model].filter(Boolean).join(" · ")])} />
         <SelectField name="customerId" label="Müşteri (iş emri yoksa)" empty="Müşteri seçilmedi"
-          value={current?.workOrderId || selected ? null : data?.customerId}
+          value={current ? (current.workOrderId || selected ? null : current.customerId) : selected ? null : customerId}
           options={clients.map(client => [client.id, client.name])} />
       </section>}
       {([[ "Motor bilgileri", motorFields], ["Sargı bilgileri", windingFields]] as const).map(([title, fields]) =>
@@ -58,6 +61,7 @@ export async function WindingEditor({ current, source, orderId, teardown }: {
           </details>
         </section>)}
       <WireFields values={windingWires(data)} />
+      <CoilWeights values={current?.coilWeights ?? []} initialCount={data?.coilCount ?? null} />
       <details className={cardCls}>
         <summary className="cursor-pointer text-sm text-accent-400">Özel alanlar</summary>
         <div className="mt-3"><TechnicalExtra device="motor" values={data?.extra} /></div>

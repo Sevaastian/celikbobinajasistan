@@ -33,6 +33,15 @@ export async function saveWinding(id: number | null, sourceId: number | null, _p
     }
   }
 
+  const coilWeights: string[] = [];
+  for (let index = 0; index < 100; index++) {
+    const raw = field(form, `coilGram-${index}`);
+    if (!raw) continue;
+    const grams = decimal(raw, 6, 1);
+    if (!grams) return `${index + 1}. bobin gramı için geçerli bir sayı girin (örn. 125,5).`;
+    coilWeights.push(grams);
+  }
+
   let savedId = id;
   try {
     const relatedId = id ?? sourceId;
@@ -60,7 +69,7 @@ export async function saveWinding(id: number | null, sourceId: number | null, _p
     const parsed = readExtra(form, fields, previous?.extra);
     if (parsed.error) return parsed.error;
     const extra = parsed.extra ?? {};
-    const data = { ...values, wireDiameter, secondWireDiameter, additionalWireDiameters, customerId: order?.customerId ?? selectedCustomer, workOrderId, extra, updatedAt: new Date() };
+    const data = { ...values, wireDiameter, secondWireDiameter, additionalWireDiameters, coilWeights, customerId: order?.customerId ?? selectedCustomer, workOrderId, extra, updatedAt: new Date() };
     if (id === null) {
       const result = await db.execute<{ id: number }>(sql`select nextval(pg_get_serial_sequence('bobinaj_kayitlari', 'id'))::int as id`);
       savedId = result.rows[0].id;
