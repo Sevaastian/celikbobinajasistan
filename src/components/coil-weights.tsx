@@ -8,10 +8,10 @@ const MAX = 100;
 const toNumber = (v: string) => { const n = Number(v.replace(",", ".")); return v.trim() !== "" && Number.isFinite(n) && n >= 0 ? n : 0; };
 
 /** Bobin sayısı kadar gram kutusu açar; yazdıkça toplam gram ve kiloyu gösterir. */
-export function CoilWeights({ values, initialCount }: { values: string[]; initialCount: number | null }) {
+export function CoilWeights({ values, initialCount }: { values: (string | number | null)[]; initialCount: number | null }) {
   const root = useRef<HTMLElement>(null);
   const [count, setCount] = useState(initialCount ?? 0);
-  const [grams, setGrams] = useState<string[]>(values.map(v => v.replace(".", ",")));
+  const [grams, setGrams] = useState<string[]>((values ?? []).map(v => String(v ?? "").replace(".", ",")));
   const [all, setAll] = useState("");
 
   // Formdaki "Bobin sayısı" kutusunu dinle.
