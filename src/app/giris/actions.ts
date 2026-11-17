@@ -66,7 +66,7 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
   });
   await logActivity(user.id, "giris", "kullanici", user.id);
   const next = formData.get("sonra");
-  redirect(typeof next === "string" && /^\/is-emirleri\/\d+$/.test(next) ? next : "/");
+  redirect(typeof next === "string" && /^\/is-emirleri\/\d+(\/bilgi)?$/.test(next) ? next : "/");
 }
 
 export async function logoutAction() {
