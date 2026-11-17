@@ -1,5 +1,7 @@
 import { requireUser } from "@/lib/auth";
 import { Achievements } from "@/components/achievements";
+import { TeamRecords } from "@/components/team-records";
+import { WorkshopWheel } from "@/components/workshop-wheel";
 import { DailySurprise } from "@/components/daily-surprise";
 import { CashChart } from "@/components/cash-chart";
 import Link from "next/link";
@@ -94,6 +96,7 @@ export default async function Dashboard() {
       <header className="cb-heading"><h1 className="text-2xl font-bold">Genel Bakış</h1></header>
 
       <DailySurprise />
+      <WorkshopWheel />
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
         {quick.map(({ href, label, icon: Icon }) => (
@@ -114,6 +117,7 @@ export default async function Dashboard() {
       </div>
 
       <Achievements />
+      <TeamRecords />
       <CashChart paid={Number(monthRevenue.t)} spent={Number(monthExpense.t)} />
       <div className="grid gap-4 lg:grid-cols-3">
         <section className="rounded-xl border border-ink-600 bg-ink-800 p-4 lg:col-span-2">
