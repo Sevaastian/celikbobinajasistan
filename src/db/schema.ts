@@ -169,6 +169,11 @@ export const workOrders = pgTable(
     brand: text("marka"),
     model: text("model"),
     serialNo: text("seri_no"),
+    /** Motor plakasından kabulde girilen değerler (benzer motor önerisi ve söküm formu ön doldurması için). */
+    plateKw: numeric("plaka_kw", { precision: 10, scale: 3 }),
+    plateVolt: text("plaka_volt"),
+    plateRpm: integer("plaka_rpm"),
+    platePoles: integer("plaka_kutup"),
     /** Aynı işten kaç adet geldiği. Ücretler tüm adetin toplamıdır. */
     quantity: integer("adet").notNull().default(1),
     receivedAt: timestamp("gelis_tarihi", { withTimezone: true }).notNull().defaultNow(),
