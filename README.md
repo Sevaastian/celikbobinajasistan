@@ -106,3 +106,10 @@ Yedek dosyasında kullanıcı şifre özetleri bulunur; paylaşmayın. Blob'daki
 - Ana sayfada "Ekip rekorları" ve "Atölye çarkı" (şaka / mini görev / maskot tepkisi).
 - Sarım görselinde renk, tel kalınlığı, bobin sayısı kişiselleştirme ve "Görseli paylaş" (PNG).
 - Gizli sürprizler: logoya 7 dokunuş, maskota 5 dokunuş, klavyede Konami kodu, 404 sayfası, gece/cuma mesajları.
+
+## Monofaze ve yardımcı bobin (v13)
+- Faz alanı artık seçim: Trifaze / Monofaze.
+- Monofaze seçilince "Yardımcı bobin" kartı açılır: yardımcı sipir, hatve ve tel çapları. Yukarıdaki sipir/hatve/teller ana bobinindir.
+- Söküm ekranındaki ❗ eksik uyarısı monofazede yardımcı bobin alanlarını da kontrol eder.
+- Kayıt detayında, söküm "önceki kayıtlar"ında ve hazır kayıt seçicide yardımcı bobin bilgisi görünür.
+- Migration: 0008_monofaze_yardimci_bobin.
