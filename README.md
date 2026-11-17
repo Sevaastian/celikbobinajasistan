@@ -57,6 +57,33 @@ Fotoğraflar tarayıcıya Blob adresiyle değil, giriş kontrolü yapan `/fotogr
 
 Aynı kullanıcı adı ve aynı IP'den 5 hatalı girişte 15 dakika, aynı IP'den toplam 30 hatalı girişte 15 dakika giriş engellenir. Başarılı giriş sayacı sıfırlar. Başka bir IP'den gelen gerçek kullanıcı etkilenmez.
 
+## WhatsApp, teklif ve teslim fişi
+- İş emri sayfasındaki **WhatsApp** menüsü müşteriye hazır mesaj açar (teslime hazır, fiyat/onay, durum). Müşteri sayfasında da WhatsApp kısayolu vardır.
+- İş emri sayfasındaki **Fiyat teklifi** ve **Teslim fişi** düğmeleri imzalanabilir tek sayfalık PDF üretir.
+- PDF başlığı için isteğe bağlı ortam değişkenleri (Vercel > Settings > Environment Variables): `BUSINESS_NAME`, `BUSINESS_PHONE`, `BUSINESS_ADDRESS`.
+
+## Hazır kayıttan ekleme ve bobin ağırlıkları
+- Yeni bobinaj kaydı ve söküm ekranlarındaki **Hazır kayıttan doldur** bölümü tüm eski kayıtlar içinde arama yapar; seçilen kaydın bilgileri yeni kayda aktarılır. Aynı kayıttan istenen kadar, istenen müşteriye kopya alınabilir (kaynak kayıt değişmez).
+- Söküm/bobinaj formundaki **Bobin sayısı** kadar gram kutusu açılır; toplam gram ve kilo otomatik hesaplanır. Kayıt sayfasında da görünür. (Migration 0005 otomatik uygulanır.)
+
+## Cihaz türleri, kalıp ve eksik bilgi uyarısı
+- Cihaz türlerine **Dalgıç motor, Su motoru, Fan motoru ve Alternatör** eklendi; bunlar da söküm ekranı ve bobinaj kaydı kullanır.
+- Bobinaj kaydında **Kalıp** alanı vardır; listede ve hazır kayıt aramasında kalıba göre aranabilir.
+- Söküm ekranında sipir, hatve veya tel çapı boşsa kırmızı ❗ uyarı çıkar ve alan kırmızı çerçevelenir (kaydı engellemez). Eksik kayıtlar listede ❗ ile işaretlenir.
+
+## Eğlenceli ve motive edici özellikler
+- İş emri **Tamamlandı** veya **Teslim edildi** olunca kısa konfeti.
+- İşlem sesleri: kaydet tıkı, başarı ve hata için ayrı sesler; üst çubuktaki hoparlör simgesiyle açılıp kapanır.
+- Ana sayfada **günün mesajı** ve motor maskotu; **atölye rozetleri** (ilk 100 iş, bu ay 50 bobinaj vb.).
+- Bobinaj formunda bobin sayısı ve tel çapına göre değişen **sargı görseli**.
+- Tema seçicide **Canlı** ve **Retro atölye** temaları.
+
+## Çok adetli iş
+İş emrinde **Adet** alanı vardır: aynı müşteriden aynı işten 17 tane geldiyse tek iş emri açılır, listede "× 17 adet" görünür. Ücretler tüm adetin toplamıdır; "Adet başı ücret" kutusu toplamı hesaplayıp ücret kutusuna yazar. İş emri sayfasında ve teklif/teslim PDF'inde adet ve adet başı tutar görünür.
+
+## Eski kayıtları toplu aktarma
+Bobinaj sayfası > **Eski kayıtları aktar**. Şablon CSV'yi indirin, defter kayıtlarını doldurun, önce önizleyin, hatasızsa aktarın. Excel'in Türkçe CSV'si (noktalı virgül) ve UTF-8/Windows-1254 dosyalar desteklenir. Müşteri adı mevcutla eşleşir, yoksa yeni müşteri açılır. HİW sütunu kullanılmaz. Usta ve yönetici yapabilir.
+
 ## Veri yedeği
 
 Yönetici, **Veri Yedeği** sayfasından tüm kayıtları tek dosya (`.ndjson`) olarak indirir. Haftada bir indirip telefon/bilgisayar dışında da saklayın.
@@ -72,3 +99,10 @@ Yedek dosyasında kullanıcı şifre özetleri bulunur; paylaşmayın. Blob'daki
 ## Test
 
 `npm run test:db` bellek içi bir PostgreSQL ile tüm migration'ları, giriş kilidini ve yedek-geri yükleme turunu dener.
+
+## Maskot, rozet kutlaması, ekip rekorları, çark, gizli sürprizler (v12)
+- Maskot sayfaya göre tepki verir; kayıt/hata/rozet olaylarına tepki verir (başlıktaki düğmeyle açılır/kapanır).
+- Yeni rozet kazanılınca animasyon + ses + konfeti.
+- Ana sayfada "Ekip rekorları" ve "Atölye çarkı" (şaka / mini görev / maskot tepkisi).
+- Sarım görselinde renk, tel kalınlığı, bobin sayısı kişiselleştirme ve "Görseli paylaş" (PNG).
+- Gizli sürprizler: logoya 7 dokunuş, maskota 5 dokunuş, klavyede Konami kodu, 404 sayfası, gece/cuma mesajları.
