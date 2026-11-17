@@ -6,19 +6,25 @@ import { DEVICE_LABELS, STATUS_LABELS, formatDate, formatTL } from "@/lib/format
 import { btnGhost, btnPrimary, cardCls } from "@/components/ui";
 import { BulkDelete } from "@/components/bulk-delete";
 import { Field, SelectField } from "@/components/record-fields";
+import { Pager } from "@/components/pager";
+import { PAGE_SIZE, pageWindow, parsePage } from "@/lib/pagination";
 
-export default async function Page({ searchParams }: { searchParams: { q?: string; durum?: string } }) {
+export default async function Page({ searchParams }: { searchParams: { q?: string; durum?: string; sayfa?: string } }) {
   const user = await requireUser();
   const query = typeof searchParams.q === "string" ? searchParams.q.trim().slice(0, 300) : "";
   const status = schema.workStatusEnum.enumValues.find(value => value === searchParams.durum);
   const { workOrders: w, customers: c } = schema;
   const pattern = `%${query}%`;
-  const orders = await getDb().select({ order: w, customer: c.name }).from(w)
+  const page = parsePage(searchParams.sayfa);
+  const { limit, offset } = pageWindow(page);
+  const fetched = await getDb().select({ order: w, customer: c.name }).from(w)
     .innerJoin(c, eq(w.customerId, c.id))
     .where(and(status ? eq(w.status, status) : undefined, query ? or(
       ilike(w.number, pattern), ilike(c.name, pattern), ilike(c.phone, pattern),
       ilike(w.brand, pattern), ilike(w.model, pattern), ilike(w.serialNo, pattern),
-    ) : undefined)).orderBy(desc(w.receivedAt), desc(w.id));
+    ) : undefined)).orderBy(desc(w.receivedAt), desc(w.id)).limit(limit).offset(offset);
+  const orders = fetched.slice(0, PAGE_SIZE);
+  const hasNext = fetched.length > PAGE_SIZE;
   const admin = user.role === "yonetici";
   return <div className="space-y-4">
     <header className="flex flex-wrap items-center justify-between gap-3">
@@ -55,5 +61,6 @@ export default async function Page({ searchParams }: { searchParams: { q?: strin
       </Link></div>)}
     </div>
     }
+    <Pager basePath="/is-emirleri" params={searchParams} page={page} hasNext={hasNext} />
   </div>;
 }
