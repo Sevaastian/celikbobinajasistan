@@ -91,9 +91,22 @@ export default async function Dashboard() {
     ] : []),
   ];
 
+  // Yönetici için yedek hatırlatması: son indirme 7 günden eskiyse (ya da hiç yoksa) uyarır.
+  let backupDays: number | null | undefined;
+  if (user.role === "yonetici") {
+    const [last] = await db.select({ at: sql<string | null>`max(${schema.activityLogs.createdAt})` }).from(schema.activityLogs)
+      .where(eq(schema.activityLogs.action, "yedek_indir"));
+    backupDays = last?.at ? Math.floor((Date.now() - new Date(last.at).getTime()) / 86400000) : null;
+  }
+
   return (
     <div className="space-y-6">
       <header className="cb-heading"><h1 className="text-2xl font-bold">Genel Bakış</h1></header>
+      {backupDays !== undefined && (backupDays === null || backupDays >= 7) && (
+        <Link href="/yedek" className="block rounded-xl border border-amber-500/60 bg-amber-500/10 p-3 text-sm text-amber-100">
+          💾 {backupDays === null ? "Henüz hiç yedek indirilmemiş." : `Son yedek ${backupDays} gün önce alındı.`} Verileri korumak için yedeği şimdi indir →
+        </Link>
+      )}
 
       <DailySurprise />
       <WorkshopWheel />
