@@ -2,7 +2,8 @@ import Link from "next/link";
 import { desc, eq, ilike, or } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { formatDate } from "@/lib/format";
-import { formatWindingWires } from "@/lib/wire-sizes";
+import { isMonophase } from "@/lib/winding-check";
+import { formatWireList, formatWindingWires } from "@/lib/wire-sizes";
 import { btnGhost, cardCls, inputCls } from "./ui";
 
 /**
@@ -32,7 +33,7 @@ export async function ReadyRecordPicker({ base, params = {}, search }: {
       {rows.map(({ record: r, customer }) => <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
         <div className="min-w-0">
           <p className="font-medium">{[r.brand, r.model].filter(Boolean).join(" ") || "Motor"} <span className="text-xs text-zinc-400">#{r.id} · {customer ?? "müşterisiz"} · {formatDate(r.createdAt)}</span></p>
-          <p className="text-sm text-zinc-400">Sipir {r.sipir ?? "—"} · Hatve {r.hatve ?? "—"}{r.mold && ` · Kalıp ${r.mold}`}{formatWindingWires(r) && ` · ${formatWindingWires(r)}`}</p>
+          <p className="text-sm text-zinc-400">Sipir {r.sipir ?? "—"} · Hatve {r.hatve ?? "—"}{r.mold && ` · Kalıp ${r.mold}`}{formatWindingWires(r) && ` · ${formatWindingWires(r)}`}{isMonophase(r.phase) && ` · Yardımcı: Sipir ${r.auxSipir ?? "—"} Hatve ${r.auxHatve ?? "—"} ${formatWireList(r.auxWireDiameters)}`}</p>
         </div>
         <Link className={btnGhost} href={link({ kopya: String(r.id) })}>Bunu kullan</Link>
       </div>)}
