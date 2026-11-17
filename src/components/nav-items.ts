@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, ClipboardList, Cog, Settings, Wrench, Zap, Droplets, Boxes,
-  Wallet, FileText, Search, UserCog, CircleUser, DatabaseBackup, type LucideIcon,
+  Wallet, FileText, Search, LayoutGrid, Calculator, UserCog, CircleUser, DatabaseBackup, type LucideIcon,
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon; adminOnly?: boolean; staffOnly?: boolean };
@@ -8,6 +8,8 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Genel Bakış", icon: LayoutDashboard },
   { href: "/musteriler", label: "Müşteriler", icon: Users },
   { href: "/is-emirleri", label: "İş Emirleri", icon: ClipboardList },
+  { href: "/pano", label: "Atölye Panosu", icon: LayoutGrid },
+  { href: "/hesap", label: "Hesaplayıcı", icon: Calculator },
   { href: "/bobinaj", label: "Motor Bobinaj", icon: Cog },
   { href: "/el-aletleri", label: "El Aletleri", icon: Wrench },
   { href: "/jeneratorler", label: "Jeneratörler", icon: Zap },
