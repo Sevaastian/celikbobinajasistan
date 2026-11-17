@@ -30,7 +30,7 @@ async function* toLines(text: string) { for (const l of text.split("\n")) yield 
   // 1) Tüm migration'lar temiz veritabanında
   const db = await fresh();
   const tables = await db.execute(sql`select count(*)::int as n from information_schema.tables where table_schema='public'`);
-  check("9 migration temiz veritabanında çalıştı", true, `${tables.rows[0].n} tablo`);
+  check("10 migration temiz veritabanında çalıştı", true, `${tables.rows[0].n} tablo`);
   const wires = await db.execute(sql`select count(*)::int as n from stok_urunleri where kategori='emaye_bakir_tel'`);
   check("0003 migration tel stoklarını ekledi", Number(wires.rows[0].n) === 39, `${wires.rows[0].n} tel`);
 
