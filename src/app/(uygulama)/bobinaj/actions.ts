@@ -66,11 +66,24 @@ export async function saveWinding(id: number | null, sourceId: number | null, _p
       }
       sizes.push(size);
     }
+    const auxSizes: string[] = [];
+    for (let index = 0; index < 10; index++) {
+      const raw = field(form, `aux-wire-${index}`);
+      if (!raw) continue;
+      const size = decimal(raw, 3, 3);
+      const oldAux = previous?.auxWireDiameters ?? [];
+      if (!size || (!wireSizes.some(option => Number(option) === Number(size)) && !oldAux.some(old => old && Number(old) === Number(size)))) {
+        return "Yardımcı bobin için listeden geçerli bir tel çapı seçin.";
+      }
+      auxSizes.push(size);
+    }
+    const auxSipir = field(form, "auxSipir").slice(0, 300) || null;
+    const auxHatve = field(form, "auxHatve").slice(0, 300) || null;
     const [wireDiameter = null, secondWireDiameter = null, ...additionalWireDiameters] = sizes;
     const parsed = readExtra(form, fields, previous?.extra);
     if (parsed.error) return parsed.error;
     const extra = parsed.extra ?? {};
-    const data = { ...values, wireDiameter, secondWireDiameter, additionalWireDiameters, coilWeights, customerId: order?.customerId ?? selectedCustomer, workOrderId, extra, updatedAt: new Date() };
+    const data = { ...values, wireDiameter, secondWireDiameter, additionalWireDiameters, auxSipir, auxHatve, auxWireDiameters: auxSizes, coilWeights, customerId: order?.customerId ?? selectedCustomer, workOrderId, extra, updatedAt: new Date() };
     if (id === null) {
       const result = await db.execute<{ id: number }>(sql`select nextval(pg_get_serial_sequence('bobinaj_kayitlari', 'id'))::int as id`);
       savedId = result.rows[0].id;

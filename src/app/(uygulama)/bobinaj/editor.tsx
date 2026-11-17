@@ -2,6 +2,7 @@ import { windingWires } from "@/lib/wire-sizes";
 import { WireFields } from "@/components/wire-fields";
 import { WindingWarning } from "@/components/winding-warning";
 import { WindingPreview } from "@/components/winding-preview";
+import { PhaseWindings } from "@/components/phase-windings";
 import { CoilWeights } from "@/components/coil-weights";
 import { TechnicalExtra } from "@/components/technical-extra";
 import { asc, desc, eq, inArray } from "drizzle-orm";
@@ -56,13 +57,14 @@ export async function WindingEditor({ current, source, orderId, teardown, custom
           <details className="mt-3">
             <summary className="cursor-pointer text-sm text-accent-400">Diğer teknik alanlar</summary>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
-              {fields.filter(([key]) => !primaryKeys.has(key)).map(([key, label, kind]) =>
+              {fields.filter(([key]) => !primaryKeys.has(key) && key !== "phase").map(([key, label, kind]) =>
                 <Field key={key} name={key} label={label} value={data?.[key]}
                   multiline={kind === "multiline"}
                   inputMode={kind === "integer" ? "numeric" : kind === "power" ? "decimal" : undefined} />)}
             </div>
           </details>
         </section>)}
+      <PhaseWindings phase={data?.phase} auxSipir={data?.auxSipir} auxHatve={data?.auxHatve} auxWires={data?.auxWireDiameters} />
       <WireFields values={windingWires(data)} />
       <WindingPreview />
       {teardown && <WindingWarning />}
