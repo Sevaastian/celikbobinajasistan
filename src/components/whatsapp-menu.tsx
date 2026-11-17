@@ -17,7 +17,7 @@ export function WhatsAppMenu({ customer, phone, order }: { customer: string; pho
     <summary className={btnGhost + " cursor-pointer list-none [&::-webkit-details-marker]:hidden"}>
       <MessageCircle size={17} /> WhatsApp ile haber ver
     </summary>
-    <div className="absolute right-0 z-30 mt-2 w-72 max-w-[85vw] rounded-xl border border-ink-600 bg-ink-800 p-2 shadow-xl">
+    <div className="absolute left-0 z-30 mt-2 w-[min(18rem,calc(100vw-2rem))] sm:left-auto sm:right-0 rounded-xl border border-ink-600 bg-ink-800 p-2 shadow-xl">
       {messages.map(message => <a key={message.key} href={whatsappLink(phone, message.text)!} target="_blank" rel="noopener noreferrer"
         className="block rounded-lg px-3 py-2 text-sm hover:bg-ink-700">
         <span className="font-medium">{message.label}</span>
