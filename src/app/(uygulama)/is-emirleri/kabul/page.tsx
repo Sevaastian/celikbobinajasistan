@@ -7,6 +7,7 @@ import { DEVICE_LABELS } from "@/lib/format";
 import { Field, SelectField } from "@/components/record-fields";
 import { RecordForm } from "@/components/record-form";
 import { btnGhost, cardCls } from "@/components/ui";
+import { PlateFields } from "@/components/plate-fields";
 import { saveOrder } from "../actions";
 
 export default async function Page({ searchParams }: { searchParams: { musteri?: string } }) {
@@ -27,6 +28,7 @@ export default async function Page({ searchParams }: { searchParams: { musteri?:
           <SelectField name="customerId" label="Müşteri" required empty="Müşteri seçin" value={searchParams.musteri}
             options={customers.map(c => [c.id, [c.name, c.phone].filter(Boolean).join(" · ")])} />
           <SelectField name="deviceType" label="Cihaz türü" value="motor" options={Object.entries(DEVICE_LABELS)} />
+          <PlateFields ocr={process.env.ANTHROPIC_API_KEY ? "claude" : "free"} />
           <Field name="quantity" label="Adet (aynı işten kaç tane)" type="number" inputMode="numeric" value={1} />
           <Field name="complaint" label="Arıza şikâyeti" multiline required />
         </div>
