@@ -287,6 +287,10 @@ export const windingRecords = pgTable(
     hatve: text("hatve"),
     /** Motorun hangi kalıpla sarıldığı (tekrar gelen işlerde aynı kalıbı bulmak için). */
     mold: text("kalip"),
+    /** Monofaze motorlarda yardımcı bobinin sipir/hatve/tel bilgileri (ana bobin yukarıdaki alanlardır). */
+    auxSipir: text("yardimci_sipir"),
+    auxHatve: text("yardimci_hatve"),
+    auxWireDiameters: numeric("yardimci_tel_caplari_mm", { precision: 6, scale: 3 }).array().notNull().default([]),
     hiw: text("hiw"),
     wireDiameter: numeric("tel_capi_mm", { precision: 6, scale: 3 }),
     secondWireDiameter: numeric("ikinci_tel_capi_mm", { precision: 6, scale: 3 }),
