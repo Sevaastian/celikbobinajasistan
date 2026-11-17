@@ -33,7 +33,7 @@ export async function OrderEditor({ order, customerId, deviceType }: {
             value={order?.customerId ?? customerId}
             options={clients.map(c => [c.id, c.phone ? `${c.name} · ${c.phone}` : c.name])} />
           <SelectField label="Cihaz türü" name="deviceType" value={order?.deviceType ?? (deviceType && Object.hasOwn(DEVICE_LABELS, deviceType) ? deviceType : "motor")} options={Object.entries(DEVICE_LABELS)} />
-          <PlateFields ocr={Boolean(process.env.ANTHROPIC_API_KEY)} showSimilar={false}
+          <PlateFields ocr={process.env.ANTHROPIC_API_KEY ? "claude" : "free"} showSimilar={false}
             initial={{ brand: order?.brand, model: order?.model, serialNo: order?.serialNo, plateKw: order?.plateKw, plateVolt: order?.plateVolt, plateRpm: order?.plateRpm, platePoles: order?.platePoles }} />
           <Field label="Geliş tarihi (Türkiye saati)" name="receivedAt" type="datetime-local" required value={localDateTime(order?.receivedAt ?? new Date())} />
           <SelectField label="Atanan personel" name="assignedUserId" empty="Atanmamış" value={order?.assignedUserId}
