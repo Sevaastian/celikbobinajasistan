@@ -6,7 +6,8 @@ import { getDb, schema } from "@/db";
 import { requireUser } from "@/lib/auth";
 import { recordId } from "@/lib/record-input";
 import { formatDate, WINDING_DEVICES } from "@/lib/format";
-import { formatWindingWires } from "@/lib/wire-sizes";
+import { isMonophase } from "@/lib/winding-check";
+import { formatWireList, formatWindingWires } from "@/lib/wire-sizes";
 import { RecordPhotos } from "@/components/record-photos";
 import { WorkshopHistory } from "@/components/workshop-history";
 import { btnGhost, cardCls } from "@/components/ui";
@@ -52,7 +53,7 @@ export default async function Page({ params, searchParams }: {
         {previous.map(item => <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
           <div><Link className="font-medium text-accent-400" href={`/bobinaj/${item.id}`}>
             {[item.brand, item.model, item.serialNo, formatDate(item.createdAt)].filter(Boolean).join(" · ")}
-          </Link><p className="text-sm text-zinc-400">Sipir {item.sipir ?? "—"} · Hatve {item.hatve ?? "—"}{item.mold && ` · Kalıp ${item.mold}`}{formatWindingWires(item) && ` · ${formatWindingWires(item)}`}</p></div>
+          </Link><p className="text-sm text-zinc-400">Sipir {item.sipir ?? "—"} · Hatve {item.hatve ?? "—"}{item.mold && ` · Kalıp ${item.mold}`}{formatWindingWires(item) && ` · ${formatWindingWires(item)}`}{isMonophase(item.phase) && ` · Yardımcı: Sipir ${item.auxSipir ?? "—"} Hatve ${item.auxHatve ?? "—"} ${formatWireList(item.auxWireDiameters)}`}</p></div>
           {!current && <Link className={btnGhost} href={`/is-emirleri/${id}/sokum?kopya=${item.id}`}>Bilgileri aktar</Link>}
         </div>)}
       </div>
