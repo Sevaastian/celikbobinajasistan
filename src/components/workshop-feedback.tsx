@@ -8,11 +8,12 @@ let context: AudioContext | undefined;
 let enabled = false;
 const preference = "cb-islem-sesi";
 
-type Sound = "kaydet" | "basari" | "hata";
+type Sound = "kaydet" | "basari" | "hata" | "rozet";
 // Her ses farklı: kaydet = kısa tık, başarı = yükselen iki nota, hata = alçak iki nota.
 const SOUNDS: Record<Sound, { notes: number[]; type: OscillatorType; gap: number; length: number; volume: number }> = {
   kaydet: { notes: [520], type: "triangle", gap: 0, length: 0.06, volume: 0.05 },
   basari: { notes: [660, 880], type: "sine", gap: 0.075, length: 0.12, volume: 0.07 },
+  rozet: { notes: [523, 659, 784, 1047], type: "sine", gap: 0.09, length: 0.18, volume: 0.07 },
   hata: { notes: [240, 180], type: "square", gap: 0.12, length: 0.16, volume: 0.04 },
 };
 
@@ -48,7 +49,13 @@ export function successFeedback() {
 }
 
 /** Hata mesajı çıkınca alçak uyarı sesi. */
-export function errorFeedback() { play("hata"); }
+export function errorFeedback() {
+  play("hata");
+  window.dispatchEvent(new Event("cb-error"));
+}
+
+/** Yeni rozet / gizli sürpriz sesi. */
+export function badgeFeedback() { play("rozet"); }
 
 /** Kaydet düğmesine basınca kısa tık sesi. */
 export function saveClickFeedback() { play("kaydet"); }

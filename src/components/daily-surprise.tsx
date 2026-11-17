@@ -1,3 +1,5 @@
+import { MascotFace, type Mood } from "./mascot-face";
+
 const MESSAGES = [
   "Bir bobin sarılırken sabır, telin kalınlığından daha önemlidir.",
   "Sipiri sayarken konuşma; en iyi usta, saydığını kaybetmeyendir.",
@@ -38,16 +40,10 @@ export function DailySurprise() {
   const day = Math.floor((Date.now() + 3 * 3600 * 1000) / 86400000);
   const message = MESSAGES[day % MESSAGES.length];
   const face = FACES[day % FACES.length];
+  const MOODS: Mood[] = ["mutlu", "kutlama", "dusunceli", "mutlu", "saskin"];
+  const mood = MOODS[day % MOODS.length];
   return <section className="flex items-center gap-3 rounded-xl border border-ink-600 bg-ink-800 p-4" aria-label="Günün mesajı">
-    <svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true" className="shrink-0">
-      <rect x="6" y="18" width="40" height="30" rx="8" className="fill-accent-500" />
-      <rect x="46" y="26" width="12" height="14" rx="3" className="fill-zinc-400" />
-      <rect x="14" y="12" width="24" height="8" rx="3" className="fill-accent-600" />
-      <circle cx="21" cy="32" r="4" fill="#fff" /><circle cx="35" cy="32" r="4" fill="#fff" />
-      <circle cx="22" cy="33" r="2" fill="#111" /><circle cx="36" cy="33" r="2" fill="#111" />
-      <path d="M20 41 q8 6 16 0" stroke="#111" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-      <rect x="12" y="48" width="8" height="6" rx="2" className="fill-zinc-500" /><rect x="32" y="48" width="8" height="6" rx="2" className="fill-zinc-500" />
-    </svg>
+    <MascotFace mood={mood} size={56} className="shrink-0" />
     <div className="min-w-0">
       <p className="text-xs text-zinc-400">Günün mesajı {face}</p>
       <p className="text-sm font-medium">{message}</p>

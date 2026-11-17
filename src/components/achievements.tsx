@@ -1,6 +1,7 @@
 import { and, gte, inArray, sql } from "drizzle-orm";
 import { Award, Lock } from "lucide-react";
 import { getDb, schema } from "@/db";
+import { BadgeWatcher } from "./badge-watcher";
 
 function monthStartIstanbul() {
   const now = new Date(Date.now() + 3 * 3600 * 1000);
@@ -32,7 +33,8 @@ export async function Achievements() {
   const earned = badges.filter(b => b.have >= b.need);
   const next = badges.filter(b => b.have < b.need).sort((a, b) => (b.have / b.need) - (a.have / a.need))[0];
   return <section className="rounded-xl border border-ink-600 bg-ink-800 p-4" aria-label="Rozetler">
-    <h2 className="mb-3 font-semibold">Atölye rozetleri <span className="text-xs font-normal text-zinc-400">({earned.length}/{badges.length})</span></h2>
+    <BadgeWatcher earned={earned.map(b => b.title)} />
+    <h2 className="mb-3 mt-2 font-semibold">Atölye rozetleri <span className="text-xs font-normal text-zinc-400">({earned.length}/{badges.length})</span></h2>
     <ul className="flex flex-wrap gap-2">
       {badges.map(b => b.have >= b.need
         ? <li key={b.title} title={b.note} className="flex items-center gap-1.5 rounded-full bg-accent-500/15 px-3 py-1 text-sm text-accent-400"><Award size={14} /> {b.title}</li>
