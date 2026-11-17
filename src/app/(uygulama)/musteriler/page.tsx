@@ -4,18 +4,25 @@ import { Plus, Search, Phone } from "lucide-react";
 import { getDb, schema } from "@/db";
 import { formatDate } from "@/lib/format";
 import { btnPrimary, cardCls, inputCls } from "@/components/ui";
+import { Pager } from "@/components/pager";
+import { PAGE_SIZE, pageWindow, parsePage } from "@/lib/pagination";
 
 const { customers } = schema;
 
-export default async function CustomersPage({ searchParams }: { searchParams: { q?: string } }) {
+export default async function CustomersPage({ searchParams }: { searchParams: { q?: string; sayfa?: string } }) {
   const q = searchParams.q?.trim() ?? "";
   const like = `%${q.replace(/[%_\\]/g, (c) => `\\${c}`)}%`;
-  const rows = await getDb()
+  const page = parsePage(searchParams.sayfa);
+  const { limit, offset } = pageWindow(page);
+  const fetched = await getDb()
     .select()
     .from(customers)
     .where(q ? or(ilike(customers.name, like), ilike(customers.phone, like)) : undefined)
     .orderBy(desc(customers.createdAt))
-    .limit(200);
+    .limit(limit)
+    .offset(offset);
+  const rows = fetched.slice(0, PAGE_SIZE);
+  const hasNext = fetched.length > PAGE_SIZE;
 
   return (
     <div className="space-y-4">
@@ -51,6 +58,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: { 
           ))}
         </ul>
       )}
+      <Pager basePath="/musteriler" params={searchParams} page={page} hasNext={hasNext} />
     </div>
   );
 }
