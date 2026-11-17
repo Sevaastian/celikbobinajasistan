@@ -15,7 +15,7 @@ export async function middleware(req: NextRequest) {
       return NextResponse.json({ hata: "Oturum bulunamadı." }, { status: 401 });
     }
     const login = new URL("/giris", req.url);
-    if (/^\/is-emirleri\/\d+$/.test(pathname)) login.searchParams.set("sonra", pathname);
+    if (/^\/is-emirleri\/\d+(\/bilgi)?$/.test(pathname)) login.searchParams.set("sonra", pathname);
     return NextResponse.redirect(login);
   }
   return NextResponse.next();
