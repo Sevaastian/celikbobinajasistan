@@ -3,7 +3,8 @@ import { formatGrams, formatKilos, sumGrams } from "@/lib/coil-weights";
 import { and, asc, desc, eq, ne, sql } from "drizzle-orm";
 import { ReportLinks } from "@/components/report-links";
 import { DeleteRecord } from "@/components/delete-record";
-import { formatWindingWires } from "@/lib/wire-sizes";
+import { isMonophase } from "@/lib/winding-check";
+import { formatWireList, formatWindingWires } from "@/lib/wire-sizes";
 import { WorkshopHistory } from "@/components/workshop-history";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -52,9 +53,13 @@ export default async function Page({ params }: { params: { id: string } }) {
       {record.copiedFromId && <Link className="text-accent-400" href={`/bobinaj/${record.copiedFromId}`}>Kaynak #{record.copiedFromId}</Link>}
     </section>}
     <section className={cardCls}>
-      <h2 className="mb-2 font-semibold">Kullanılacak teller</h2>
+      <h2 className="mb-2 font-semibold">{isMonophase(record.phase) ? "Ana bobin telleri" : "Kullanılacak teller"}</h2>
       <p>{formatWindingWires(record) || "Tel seçilmedi"}</p>
     </section>
+    {isMonophase(record.phase) && <section className={cardCls}>
+      <h2 className="mb-2 font-semibold">Yardımcı bobin</h2>
+      <p>Sipir {record.auxSipir ?? "—"} · Hatve {record.auxHatve ?? "—"} · {formatWireList(record.auxWireDiameters) || "Tel seçilmedi"}</p>
+    </section>}
     {missingWinding(record).length > 0 && <p role="alert" className="rounded-lg border border-red-500/60 bg-red-500/10 p-3 text-sm text-red-200">❗ Eksik bilgi: {missingWinding(record).join(", ")}. <Link className="underline" href={`/bobinaj/${id}/duzenle`}>Düzenleyip tamamla</Link></p>}
     {coilWeights.length > 0 && <section className={cardCls}>
       <h2 className="mb-2 font-semibold">Bobin ağırlıkları</h2>
