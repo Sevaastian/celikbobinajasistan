@@ -42,7 +42,10 @@ export default async function Page({ params, searchParams }: {
     <header className="cb-heading flex flex-wrap items-center justify-between gap-3">
       <div><h1 className="flex items-center gap-2 text-2xl font-bold"><Cog size={24} className="text-accent-400" /> Söküm</h1>
         <p className="mt-1 text-sm text-zinc-300">{order.number} · {customer}{order.serialNo && ` · ${order.serialNo}`}</p></div>
-      <Link className={btnGhost} href={`/is-emirleri/${id}`}>İş emrine dön</Link>
+      <div className="flex flex-wrap gap-2">
+        {current && <Link className={btnGhost} href={`/is-emirleri/${id}/etiket`}>QR etiket yazdır</Link>}
+        <Link className={btnGhost} href={`/is-emirleri/${id}`}>İş emrine dön</Link>
+      </div>
     </header>
     {linked.length > 1 && <nav className="flex flex-wrap gap-2">{linked.map(item =>
       <Link key={item.id} aria-current={item.id === current?.id ? "page" : undefined} className={btnGhost}
