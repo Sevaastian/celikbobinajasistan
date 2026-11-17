@@ -57,6 +57,13 @@
       "when": 1794827025261,
       "tag": "0007_cihaz_turleri_kalip",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794894315255,
+      "tag": "0008_monofaze_yardimci_bobin",
+      "breakpoints": true
     }
   ]
 }
