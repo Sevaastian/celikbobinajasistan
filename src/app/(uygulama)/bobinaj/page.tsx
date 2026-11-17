@@ -9,6 +9,8 @@ import { decimal } from "@/lib/record-input";
 import { BulkDelete } from "@/components/bulk-delete";
 import { Field, SelectField } from "@/components/record-fields";
 import { btnGhost, btnPrimary, cardCls } from "@/components/ui";
+import { Pager } from "@/components/pager";
+import { PAGE_SIZE, pageWindow, parsePage } from "@/lib/pagination";
 
 export default async function Page({ searchParams }: { searchParams: Record<string, string | string[] | undefined> }) {
   const session = await requireUser();
@@ -27,7 +29,9 @@ export default async function Page({ searchParams }: { searchParams: Record<stri
   const invalidFilter = (Boolean(wire) && !diameter) || (Boolean(kwText) && !kw) || (Boolean(rpmText) && rpm === null);
   const { windingRecords: w, customers: c, workOrders: o } = schema;
   const pattern = `%${q}%`;
-  const rows = invalidFilter ? [] : await getDb().select({ record: w, customer: c.name }).from(w)
+  const page = parsePage(searchParams.sayfa);
+  const { limit, offset } = pageWindow(page);
+  const fetched = invalidFilter ? [] : await getDb().select({ record: w, customer: c.name }).from(w)
     .leftJoin(c, eq(w.customerId, c.id)).leftJoin(o, eq(w.workOrderId, o.id))
     .where(and(
       q ? or(ilike(w.brand, pattern), ilike(w.model, pattern), ilike(w.serialNo, pattern), ilike(w.mold, pattern),
@@ -39,7 +43,9 @@ export default async function Page({ searchParams }: { searchParams: Record<stri
       hatve ? ilike(w.hatve, `%${hatve}%`) : undefined,
       mold ? ilike(w.mold, `%${mold}%`) : undefined,
       diameter ? or(eq(w.wireDiameter, diameter), eq(w.secondWireDiameter, diameter), sql`${diameter}::numeric = any(${w.additionalWireDiameters})`) : undefined,
-    )).orderBy(desc(w.createdAt), desc(w.id));
+    )).orderBy(desc(w.createdAt), desc(w.id)).limit(limit).offset(offset);
+  const rows = fetched.slice(0, PAGE_SIZE);
+  const hasNext = fetched.length > PAGE_SIZE;
   return <div className="space-y-4">
     <header className="flex flex-wrap items-center justify-between gap-3">
       <h1 className="text-2xl font-bold">Motor Bobinaj</h1>
@@ -83,5 +89,6 @@ export default async function Page({ searchParams }: { searchParams: Record<stri
       </Link></div>)}
     </div>
     }
+    <Pager basePath="/bobinaj" params={searchParams} page={page} hasNext={hasNext} />
   </div>;
 }
