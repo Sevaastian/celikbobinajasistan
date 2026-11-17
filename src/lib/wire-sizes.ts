@@ -29,3 +29,7 @@ export function windingWires(record?: {
 export function formatWindingWires(record: Parameters<typeof windingWires>[0]) {
   return windingWires(record).filter((size): size is string => !!size).map(formatWireSize).join(" + ");
 }
+
+export function formatWireList(sizes: (string | null | undefined)[] | null | undefined) {
+  return (sizes ?? []).filter((size): size is string => !!size).map(formatWireSize).join(" + ");
+}
