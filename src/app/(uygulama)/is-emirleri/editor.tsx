@@ -2,6 +2,7 @@ import { TechnicalExtra } from "@/components/technical-extra";
 import { asc, eq, or } from "drizzle-orm";
 import Link from "next/link";
 import { getDb, schema } from "@/db";
+import { PlateFields } from "@/components/plate-fields";
 import { Field, SelectField } from "@/components/record-fields";
 import { RecordForm } from "@/components/record-form";
 import { btnGhost, cardCls } from "@/components/ui";
@@ -32,9 +33,8 @@ export async function OrderEditor({ order, customerId, deviceType }: {
             value={order?.customerId ?? customerId}
             options={clients.map(c => [c.id, c.phone ? `${c.name} · ${c.phone}` : c.name])} />
           <SelectField label="Cihaz türü" name="deviceType" value={order?.deviceType ?? (deviceType && Object.hasOwn(DEVICE_LABELS, deviceType) ? deviceType : "motor")} options={Object.entries(DEVICE_LABELS)} />
-          <Field label="Marka" name="brand" value={order?.brand} />
-          <Field label="Model" name="model" value={order?.model} />
-          <Field label="Seri numarası" name="serialNo" value={order?.serialNo} />
+          <PlateFields ocr={Boolean(process.env.ANTHROPIC_API_KEY)} showSimilar={false}
+            initial={{ brand: order?.brand, model: order?.model, serialNo: order?.serialNo, plateKw: order?.plateKw, plateVolt: order?.plateVolt, plateRpm: order?.plateRpm, platePoles: order?.platePoles }} />
           <Field label="Geliş tarihi (Türkiye saati)" name="receivedAt" type="datetime-local" required value={localDateTime(order?.receivedAt ?? new Date())} />
           <SelectField label="Atanan personel" name="assignedUserId" empty="Atanmamış" value={order?.assignedUserId}
             options={staff.map(s => [s.id, s.active ? s.name : `${s.name} (pasif)`])} />

@@ -29,8 +29,16 @@ export async function saveOrder(id: number | null, _previous: string | null, for
   if ((estimated && !estimatedPrice) || (final && !finalPrice)) return "Ücretleri en fazla iki ondalık basamakla girin.";
   if (field(form, "assignedUserId") && !assignedUserId) return "Geçerli bir personel seçin.";
 
+  const plateKwText = field(form, "plateKw");
+  const plateKw = plateKwText ? decimal(plateKwText, 7, 3) : null;
+  const plateRpmText = field(form, "plateRpm");
+  const platePolesText = field(form, "platePoles");
+  const plateRpm = plateRpmText ? recordId(plateRpmText) : null;
+  const platePoles = platePolesText ? recordId(platePolesText) : null;
+  if ((plateKwText && !plateKw) || (plateRpmText && !plateRpm) || (platePolesText && !platePoles)) return "Plaka değerlerinde kW, devir ve kutup sayısı için geçerli bir sayı girin.";
   const values = {
-    customerId, assignedUserId, deviceType, receivedAt, estimatedPrice, finalPrice, quantity,
+    customerId, plateKw, plateRpm, platePoles,
+    plateVolt: field(form, "plateVolt").slice(0, 50) || null, assignedUserId, deviceType, receivedAt, estimatedPrice, finalPrice, quantity,
     brand: field(form, "brand").slice(0, 300) || null,
     model: field(form, "model").slice(0, 300) || null,
     serialNo: field(form, "serialNo").slice(0, 300) || null,
@@ -73,7 +81,7 @@ export async function saveOrder(id: number | null, _previous: string | null, for
             musteri_id = ${customerId}, cihaz_turu = ${deviceType}::cihaz_turu,
             atanan_kullanici_id = ${assignedUserId}, gelis_tarihi = ${receivedAt.toISOString()},
             tahmini_ucret = ${estimatedPrice}, kesin_ucret = ${finalPrice},
-            adet = ${quantity}, marka = ${values.brand}, model = ${values.model}, seri_no = ${values.serialNo},
+            adet = ${quantity}, plaka_kw = ${values.plateKw}, plaka_volt = ${values.plateVolt}, plaka_rpm = ${values.plateRpm}, plaka_kutup = ${values.platePoles}, marka = ${values.brand}, model = ${values.model}, seri_no = ${values.serialNo},
             ariza_sikayeti = ${values.complaint}, ariza_tespiti = ${values.diagnosis},
             yapilacak_islemler = ${values.plannedWork}, ek_alanlar = ${JSON.stringify(extra)}::jsonb, guncelleme_tarihi = now()
           where id = ${id}
