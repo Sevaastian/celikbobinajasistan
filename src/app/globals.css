@@ -104,3 +104,12 @@ img, svg, video, canvas { max-width: 100%; }
 
 @keyframes cb-spin { to { transform: rotate(360deg); } }
 .cb-spin { animation: cb-spin 40s linear infinite; }
+
+@keyframes cb-spin-once { to { transform: rotate(360deg) scale(1.15); } }
+.cb-spin-once { animation: cb-spin-once 1.1s ease-in-out; }
+@keyframes cb-hue { to { filter: hue-rotate(360deg); } }
+html.cb-disco body { animation: cb-hue 1.6s linear infinite; }
+@keyframes cb-pop { 0% { transform: scale(.6); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
+.cb-pop { animation: cb-pop 420ms ease-out both; }
+@keyframes cb-wheel-spin { from { transform: rotate(0deg); } }
+@media (prefers-reduced-motion: reduce) { .cb-spin-once, html.cb-disco body, .cb-pop { animation: none; } }
