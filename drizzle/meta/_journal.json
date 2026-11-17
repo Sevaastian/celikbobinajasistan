@@ -64,6 +64,13 @@
       "when": 1794894315255,
       "tag": "0008_monofaze_yardimci_bobin",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794909238283,
+      "tag": "0009_arama_indeksleri",
+      "breakpoints": true
     }
   ]
 }
